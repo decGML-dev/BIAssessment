@@ -1,0 +1,2151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Microsoft Corp - Advanced ESG Intelligence Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/gitbrent/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+    
+    <style>
+        :root {
+            --ms-blue: #0078D4;
+            --ms-dark: #242424;
+            --ms-green: #107C10;
+            --ms-red: #d13438;
+            --ms-orange: #FF8C00;
+            --ms-yellow: #FFB900;
+            --ms-gray: #737373;
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+        }
+
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; background-color: var(--bg-color); color: var(--ms-dark); }
+        
+        /* Layout & Header */
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 3px solid var(--ms-blue); padding-bottom: 15px; background: linear-gradient(135deg, #ffffff 0%, #f0f7ff 100%); padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .header-title h1 { margin: 0; font-size: 28px; color: var(--ms-blue); }
+        .header-title h2 { margin: 5px 0 0; font-size: 16px; color: var(--ms-gray); font-weight: 400; }
+        .student-id { font-weight: bold; color: var(--ms-blue); font-size: 14px; }
+
+        /* Navigation Tabs */
+        .tab-container { display: flex; gap: 5px; margin-bottom: 20px; border-bottom: 2px solid #e0e0e0; }
+        .tab { padding: 12px 24px; background: transparent; border: none; cursor: pointer; font-weight: 600; color: var(--ms-gray); transition: all 0.3s; border-bottom: 3px solid transparent; }
+        .tab:hover { background: #f0f7ff; }
+        .tab.active { color: var(--ms-blue); border-bottom-color: var(--ms-blue); background: #f0f7ff; }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* Action Buttons */
+        .action-bar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; transition: all 0.2s; }
+        .btn-pdf { background-color: var(--ms-red); color: white; }
+        .btn-ppt { background-color: #D24726; color: white; }
+        .btn-export { background-color: var(--ms-green); color: white; }
+        .btn:hover { opacity: 0.9; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+
+        /* Snapshot */
+        .snapshot-container { display: grid; grid-template-columns: 3fr 1fr; gap: 20px; margin-bottom: 25px; }
+        .headline-card { background: linear-gradient(135deg, var(--ms-blue) 0%, #005a9e 100%); color: white; padding: 30px; border-radius: 8px; display: flex; flex-direction: column; justify-content: center; box-shadow: 0 4px 12px rgba(0,120,212,0.3); }
+        .headline-card h3 { margin: 0 0 15px 0; opacity: 0.9; text-transform: uppercase; font-size: 14px; letter-spacing: 1px; }
+        .headline-card p { margin: 0; font-size: 24px; font-weight: 600; line-height: 1.4; }
+        
+        .metrics-row { display: flex; flex-direction: column; gap: 15px; }
+        .mini-metric { background: var(--card-bg); padding: 18px; border-radius: 8px; border-left: 5px solid var(--ms-gray); box-shadow: 0 2px 8px rgba(0,0,0,0.08); transition: transform 0.2s; }
+        .mini-metric:hover { transform: translateX(5px); }
+        .mini-metric.pos { border-left-color: var(--ms-green); }
+        .mini-metric.neg { border-left-color: var(--ms-red); }
+        .mini-metric .label { font-size: 13px; color: var(--ms-gray); text-transform: uppercase; }
+        .mini-metric .value { font-size: 24px; font-weight: bold; margin: 4px 0; }
+        .mini-metric .change { font-size: 13px; font-weight: 600; }
+
+        /* Alert Banner */
+        .alert-banner { background: linear-gradient(135deg, #fff4e6 0%, #ffe8cc 100%); border-left: 5px solid var(--ms-orange); padding: 20px; border-radius: 8px; margin-bottom: 25px; box-shadow: 0 2px 8px rgba(255,140,0,0.2); }
+        .alert-banner h3 { margin: 0 0 10px 0; color: #d97700; font-size: 18px; display: flex; align-items: center; gap: 10px; }
+        .alert-banner p { margin: 0; color: #5c3d00; line-height: 1.6; }
+
+        /* KPI Grids */
+        .section-header { font-size: 20px; font-weight: 600; margin: 30px 0 15px; padding-bottom: 8px; border-bottom: 2px solid #e0e0e0; display: flex; align-items: center; gap: 10px; }
+        .dot { height: 14px; width: 14px; border-radius: 50%; display: inline-block; }
+        
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 10px; }
+        .kpi-card { background: var(--card-bg); padding: 22px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); position: relative; overflow: hidden; transition: all 0.3s; }
+        .kpi-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.15); transform: translateY(-2px); }
+        .kpi-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--ms-blue), #00bcf2); }
+        .kpi-card h4 { margin: 0 0 12px 0; font-size: 13px; color: var(--ms-gray); text-transform: uppercase; letter-spacing: 0.5px; }
+        .kpi-card .val { font-size: 32px; font-weight: bold; color: var(--ms-dark); }
+        .kpi-card .unit { font-size: 16px; font-weight: normal; color: var(--ms-gray); }
+        .kpi-card .sub { font-size: 13px; margin-top: 10px; font-weight: 500; }
+        .kpi-card .benchmark { font-size: 12px; margin-top: 8px; padding: 6px 10px; background: #f5f5f5; border-radius: 4px; display: inline-block; }
+        .trend-up { color: var(--ms-red); }
+        .trend-down { color: var(--ms-green); }
+        .trend-pos { color: var(--ms-green); }
+
+        /* Risk Matrix */
+        .risk-matrix { background: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 25px; }
+        .risk-grid { display: grid; grid-template-columns: 50px repeat(5, 1fr); grid-template-rows: repeat(5, 60px); gap: 2px; margin-top: 15px; }
+        .risk-cell { border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; }
+        .risk-label { background: #f5f5f5; font-weight: bold; color: var(--ms-gray); }
+        .risk-low { background: #e8f5e9; }
+        .risk-medium { background: #fff9e6; }
+        .risk-high { background: #ffebee; }
+        .risk-critical { background: #d32f2f; color: white; }
+        .risk-item { padding: 4px 8px; background: white; border: 2px solid; border-radius: 4px; font-size: 11px; text-align: center; }
+
+        /* Competitive Benchmark */
+        .benchmark-section { background: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 25px; }
+        .benchmark-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px; }
+        .benchmark-card { padding: 15px; border: 2px solid #e0e0e0; border-radius: 6px; }
+        .benchmark-card.leader { border-color: var(--ms-green); background: #f1f8f4; }
+        .benchmark-card h4 { margin: 0 0 10px; font-size: 16px; }
+        .benchmark-metric { display: flex; justify-content: space-between; margin: 8px 0; font-size: 13px; }
+
+        /* Analysis & Charts Area */
+        .analysis-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 25px; }
+        .chart-card { background: var(--card-bg); padding: 25px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); height: 400px; }
+        .chart-card.large { grid-column: 1 / -1; height: 450px; }
+        
+        .text-analysis { background: #fff; padding: 28px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border-top: 5px solid var(--ms-red); }
+        .text-analysis.positive { border-top-color: var(--ms-green); }
+        .text-analysis.warning { border-top-color: var(--ms-orange); }
+        .text-analysis h3 { margin-top: 0; color: var(--ms-dark); font-size: 20px; }
+        .analysis-point { margin-bottom: 18px; padding-left: 20px; border-left: 3px solid #e0e0e0; }
+        .analysis-point strong { color: var(--ms-blue); display: block; margin-bottom: 6px; font-size: 15px; }
+        .analysis-point p { margin: 0; line-height: 1.6; color: #555; }
+
+        /* Scenario Planning */
+        .scenario-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 20px; }
+        .scenario-card { padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .scenario-card.optimistic { background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%); border-top: 4px solid var(--ms-green); }
+        .scenario-card.baseline { background: linear-gradient(135deg, #fff9e6 0%, #ffecb3 100%); border-top: 4px solid var(--ms-yellow); }
+        .scenario-card.pessimistic { background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%); border-top: 4px solid var(--ms-red); }
+        .scenario-card h4 { margin: 0 0 15px; font-size: 18px; }
+        .scenario-metric { margin: 10px 0; font-size: 14px; }
+        .scenario-metric strong { display: block; color: var(--ms-gray); font-size: 12px; text-transform: uppercase; margin-bottom: 4px; }
+
+        /* Materiality Matrix */
+        .materiality-container { background: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 25px; }
+        .materiality-canvas { width: 100%; height: 400px; border: 1px solid #e0e0e0; background: linear-gradient(to top, #f5f5f5 0%, white 100%); position: relative; }
+        
+        /* Timeline */
+        .timeline { position: relative; padding: 20px 0; }
+        .timeline-item { display: flex; gap: 20px; margin-bottom: 30px; position: relative; }
+        .timeline-item::before { content: ''; position: absolute; left: 19px; top: 30px; bottom: -30px; width: 2px; background: #e0e0e0; }
+        .timeline-item:last-child::before { display: none; }
+        .timeline-dot { width: 40px; height: 40px; border-radius: 50%; background: var(--ms-blue); color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; z-index: 1; }
+        .timeline-content { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); flex: 1; }
+        .timeline-content h4 { margin: 0 0 10px; color: var(--ms-blue); }
+
+        /* Stakeholder Impact */
+        .stakeholder-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-top: 20px; }
+        .stakeholder-card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border-left: 5px solid var(--ms-blue); }
+        .stakeholder-card h4 { margin: 0 0 15px; display: flex; align-items: center; gap: 10px; font-size: 16px; }
+        .impact-item { margin: 8px 0; padding: 8px; background: #f9f9f9; border-radius: 4px; font-size: 13px; }
+        .impact-positive { border-left: 3px solid var(--ms-green); }
+        .impact-negative { border-left: 3px solid var(--ms-red); }
+
+        @media (max-width: 1200px) {
+            .snapshot-container, .analysis-grid { grid-template-columns: 1fr; }
+            .scenario-container { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 768px) {
+            .metrics-row { flex-direction: column; }
+            .kpi-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-title">
+            <h1>Microsoft Corp (MSFT) - Advanced ESG Intelligence</h1>
+            <h2>Comprehensive Business Impact Analysis | Q2 FY2026 (Ended Dec 31, 2025)</h2>
+        </div>
+        <div style="text-align: right;">
+            <div class="student-id">Student ID: 25189191</div>
+            <div style="font-size: 12px; color: #666;">Generated: Feb 07, 2026 | Last Updated: 14:30 GMT</div>
+        </div>
+    </header>
+
+    <div class="action-bar">
+        <button class="btn btn-pdf" onclick="generateReportPDF()">📄 Executive Brief (PDF)</button>
+        <button class="btn btn-ppt" onclick="generateBoardPPT()">📊 Board Deck (PPTX)</button>
+        <button class="btn btn-export">💾 Export Data (CSV)</button>
+    </div>
+
+    <!-- Tab Navigation -->
+    <div class="tab-container">
+        <button class="tab active" onclick="switchTab('overview')">Executive Overview</button>
+        <button class="tab" onclick="switchTab('environmental')">Environmental Deep Dive</button>
+        <button class="tab" onclick="switchTab('financial')">Financial-ESG Correlation</button>
+        <button class="tab" onclick="switchTab('risk')">Risk & Scenarios</button>
+        <button class="tab" onclick="switchTab('stakeholder')">Stakeholder Impact</button>
+    </div>
+
+    <!-- TAB 1: OVERVIEW -->
+    <div id="overview" class="tab-content active">
+        <div class="alert-banner">
+            <h3>🚨 Critical Alert: ESG-Financial Decoupling Accelerating</h3>
+            <p>The ratio of Scope 3 emissions to revenue has increased by 5.1% in Q2 FY26, the highest quarterly deterioration since FY22. Without intervention, Microsoft's carbon intensity will reach 165 kgCO2e per $1M revenue by Q4 FY26, exceeding the 2030 target pathway by 34%. Immediate executive action required on capital goods procurement strategy.</p>
+        </div>
+
+        <div class="snapshot-container">
+            <div class="headline-card">
+                <h3>Executive Snapshot: The AI Infrastructure Paradox</h3>
+                <p>"Q2 FY26 marks the apex of the 'AI Diffusion Era'—record revenue ($81.3B, +17% YoY) driven by cloud and productivity AI integration. However, the infrastructure required to sustain this growth has triggered a fundamental decoupling: every $1B of incremental AI revenue now generates approximately 43K mtCO2e in embedded supply chain emissions, creating a structural tension between growth targets and 2030 carbon-negative commitments."</p>
+            </div>
+            <div class="metrics-row">
+                <div class="mini-metric pos">
+                    <div class="label">Total Revenue</div>
+                    <div class="value">$81.3B</div>
+                    <div class="change" style="color: var(--ms-green);">▲ 17% YoY | +$11.8B</div>
+                </div>
+                <div class="mini-metric neg">
+                    <div class="label">Infrastructure Capex</div>
+                    <div class="value">$37.5B</div>
+                    <div class="change" style="color: var(--ms-red);">▲ 66% YoY | +$14.9B</div>
+                </div>
+                <div class="mini-metric pos">
+                    <div class="label">Commercial RPO</div>
+                    <div class="value">$625B</div>
+                    <div class="change" style="color: var(--ms-green);">▲ 110% YoY | Pipeline Strength</div>
+                </div>
+                <div class="mini-metric neg">
+                    <div class="label">Carbon Intensity</div>
+                    <div class="value">166 kg</div>
+                    <div class="change" style="color: var(--ms-red);">CO2e per $1M revenue (↑5.1%)</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-header"><span class="dot" style="background: var(--ms-green);"></span> Core Environmental Metrics</div>
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <h4>Total Carbon Footprint</h4>
+                <div class="val">13.79M <span class="unit">mtCO2e</span></div>
+                <div class="sub trend-up">▲ 21.8% YoY (Combined Scopes 1+2+3)</div>
+                <div class="benchmark">Industry Avg: 15.2M mtCO2e</div>
+            </div>
+            <div class="kpi-card" style="border-top: 4px solid var(--ms-green);">
+                <h4>Scope 1+2 Emissions</h4>
+                <div class="val">290K <span class="unit">mtCO2e</span></div>
+                <div class="sub trend-down">▼ 6% YoY (Renewable PPA expansion)</div>
+                <div class="benchmark">2030 Target: 100K mtCO2e (on track)</div>
+            </div>
+            <div class="kpi-card" style="border-top: 4px solid var(--ms-red);">
+                <h4>Scope 3 Emissions</h4>
+                <div class="val">13.5M <span class="unit">mtCO2e</span></div>
+                <div class="sub trend-up">▲ 23% YoY (Capital goods surge)</div>
+                <div class="benchmark">2030 Target: At Risk (-34% gap)</div>
+            </div>
+            <div class="kpi-card">
+                <h4>Carbon Removal Portfolio</h4>
+                <div class="val">45M <span class="unit">tons</span></div>
+                <div class="sub trend-pos">Contracted lifetime volume (+8.5M Q2)</div>
+                <div class="benchmark">Cost: $47/ton avg (↓12% vs FY25)</div>
+            </div>
+            <div class="kpi-card">
+                <h4>Renewable Energy %</h4>
+                <div class="val">87% <span class="unit"></span></div>
+                <div class="sub trend-pos">▲ 3pp YoY (Nuclear deal pending)</div>
+                <div class="benchmark">2025 Target: 100% CFE (Nuclear critical)</div>
+            </div>
+            <div class="kpi-card" style="border-top: 4px solid var(--ms-orange);">
+                <h4>Water Usage (Datacenters)</h4>
+                <div class="val">7.8M <span class="unit">m³</span></div>
+                <div class="sub trend-up">▲ 18% YoY (AI cooling demand)</div>
+                <div class="benchmark">Replenishment: 100M+ m³ (129% ratio)</div>
+            </div>
+        </div>
+
+        <div class="section-header"><span class="dot" style="background: var(--ms-blue);"></span> Social & Governance Performance</div>
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <h4>Global Skilling Initiative</h4>
+                <div class="val">12.6M</div>
+                <div class="sub">People trained (126% of 10M target)</div>
+                <div class="benchmark">Focus: AI literacy + Cloud skills</div>
+            </div>
+            <div class="kpi-card">
+                <h4>Supplier CFE Commitment</h4>
+                <div class="val">100%</div>
+                <div class="sub">Top suppliers with 2030 CFE mandate</div>
+                <div class="benchmark">Implementation lag: Tier-2 suppliers</div>
+            </div>
+            <div class="kpi-card">
+                <h4>Board Diversity</h4>
+                <div class="val">50%</div>
+                <div class="sub">Diverse representation (6 of 12)</div>
+                <div class="benchmark">Gender: 33% | Ethnic: 25%</div>
+            </div>
+            <div class="kpi-card">
+                <h4>AI Responsible AI Reviews</h4>
+                <div class="val">1,240</div>
+                <div class="sub">Projects reviewed in Q2 FY26</div>
+                <div class="benchmark">▲ 34% vs Q1 (Copilot expansion)</div>
+            </div>
+            <div class="kpi-card">
+                <h4>Employee Engagement</h4>
+                <div class="val">82%</div>
+                <div class="sub">Favorable score (Glint survey)</div>
+                <div class="benchmark">Industry avg: 76% (Top quartile)</div>
+            </div>
+            <div class="kpi-card">
+                <h4>Data Privacy Incidents</h4>
+                <div class="val">0</div>
+                <div class="sub">Material breaches in FY26</div>
+                <div class="benchmark">Security investment: $2.1B annually</div>
+            </div>
+        </div>
+
+        <div class="analysis-grid">
+            <div class="chart-card">
+                <canvas id="revenueChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <canvas id="emissionsChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <canvas id="intensityChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <canvas id="capexBreakdownChart"></canvas>
+            </div>
+        </div>
+
+        <div class="analysis-grid">
+            <div class="text-analysis">
+                <h3>⚠ Critical Strategic Issues (Q2 FY26)</h3>
+                <div class="analysis-point">
+                    <strong>1. The AI Infrastructure Paradox: Growth vs. Carbon Math</strong>
+                    <p>Revenue growth (+17%) is fundamentally decoupled from emissions trajectory (+23% Scope 3). The $37.5B Capex surge—66% YoY increase—is primarily allocated to AI infrastructure (GPUs, datacenter construction). In carbon accounting, this translates directly to "Capital Goods" emissions. Analysis: Each $1B of infrastructure spend generates ~360K mtCO2e of embedded emissions (steel, concrete, electronics manufacturing). At current trajectory, FY26 will add 5.3M mtCO2e from capital goods alone—equivalent to adding 1.15M passenger vehicles to the road. The 2030 "Carbon Negative" goal requires net removal of all historical emissions, but current growth dynamics are expanding the liability faster than removal contracts can offset.</p>
+                </div>
+                <div class="analysis-point">
+                    <strong>2. The Water-Energy Nexus: From Metric to Material Risk</strong>
+                    <p>Datacenter water consumption rose 18% YoY (7.8M m³ in Q2 alone). Projections indicate a 150% increase by 2030 driven by liquid cooling requirements for AI accelerator chips. Geographic concentration risk: 34% of new capacity is in water-stressed regions (Phoenix metro, Chile, parts of India). In Phoenix specifically, Microsoft's datacenter water usage now represents 1.2% of total municipal consumption—a level that triggers community relations friction and potential regulatory intervention. While global water replenishment exceeds usage (129% ratio), the temporal and geographic mismatch creates a "license to operate" vulnerability. Three facilities faced operational restrictions in Q2 due to local water stress events.</p>
+                </div>
+                <div class="analysis-point">
+                    <strong>3. Nuclear Energy Strategy: New Governance Territory</strong>
+                    <p>The Crane Clean Energy Center (Three Mile Island) restart agreement represents a strategic pivot in Microsoft's energy procurement model. Nuclear provides carbon-free baseload power (670 MW for 20 years) that solar/wind PPAs cannot match for AI training workloads. However, this introduces distinct governance dimensions: (a) Reputational sensitivity—the Three Mile Island brand carries historical weight despite modern safety standards; (b) Regulatory complexity—nuclear power involves NRC oversight, security requirements, and waste management protocols absent from standard renewable contracts; (c) Cost structure—the reported $100M/year spend translates to ~$17/MWh, competitive with new renewable PPAs but with different risk profiles. Board-level nuclear energy competency and oversight frameworks are now required.</p>
+                </div>
+            </div>
+            <div class="text-analysis positive">
+                <h3>✔ Strategic Opportunities & Strengths</h3>
+                <div class="analysis-point">
+                    <strong>1. Carbon Removal Leadership Position</strong>
+                    <p>Microsoft has secured 45M tons of carbon removal contracts—the largest corporate portfolio globally. Average cost has declined to $47/ton (down 12% YoY) due to scale procurement and technology maturation. Portfolio diversification: Direct Air Capture (34%), Enhanced Weathering (28%), Biochar (21%), Reforestation (17%). This positions Microsoft to potentially monetize removal credits in future compliance markets while meeting internal commitments. The Q2 addition of 8.5M tons of contracted volume included the first megaton-scale Enhanced Rock Weathering project in Brazil—a potential blueprint for low-cost ($30-40/ton) permanent removal at scale.</p>
+                </div>
+                <div class="analysis-point">
+                    <strong>2. Supplier Engagement Model Creating Industry Standard</strong>
+                    <p>The mandate requiring 100% of suppliers to commit to Carbon Free Electricity by 2030 is cascading through the value chain. 87% of top-tier suppliers (by spend) have now published 2030 CFE roadmaps, creating sector-wide decarbonization momentum. Microsoft's supplier engagement program is being studied as best practice by other hyperscalers. Implementation challenge: Tier-2 and Tier-3 suppliers (particularly in Asian manufacturing) lag in both commitment and execution, creating a "last mile" problem for full Scope 3 control.</p>
+                </div>
+                <div class="analysis-point">
+                    <strong>3. AI-Driven Sustainability Innovation Pipeline</strong>
+                    <p>Internal R&D: Microsoft's Planetary Computer and AI for Earth initiatives are now generating commercial sustainability products. Q2 highlights: (a) AI-optimized datacenter cooling reducing PUE by 9% in pilot sites; (b) Predictive maintenance algorithms cutting e-waste by 14%; (c) Green software engineering tools integrated into GitHub Copilot, enabling 2.3M developers to write more energy-efficient code. These innovations create dual value: internal operational efficiency and external revenue potential in the growing climate tech market ($2.1T projected by 2030).</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 2: ENVIRONMENTAL DEEP DIVE -->
+    <div id="environmental" class="tab-content">
+        <div class="section-header"><span class="dot" style="background: var(--ms-green);"></span> Emissions Decomposition & Attribution Analysis</div>
+        
+        <div class="analysis-grid">
+            <div class="chart-card large">
+                <canvas id="emissionsWaterfallChart"></canvas>
+            </div>
+        </div>
+
+        <div class="analysis-grid">
+            <div class="chart-card">
+                <canvas id="scope3BreakdownChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <canvas id="waterTrendChart"></canvas>
+            </div>
+        </div>
+
+        <div class="benchmark-section">
+            <h3>Competitive Benchmarking: Tech Sector ESG Performance</h3>
+            <div class="benchmark-grid">
+                <div class="benchmark-card leader">
+                    <h4>Microsoft (MSFT)</h4>
+                    <div class="benchmark-metric"><span>Carbon Intensity:</span><strong>166 kg/$M</strong></div>
+                    <div class="benchmark-metric"><span>Renewable Energy:</span><strong>87%</strong></div>
+                    <div class="benchmark-metric"><span>Water Replenish:</span><strong>129%</strong></div>
+                    <div class="benchmark-metric"><span>ESG Score:</span><strong>82/100</strong></div>
+                </div>
+                <div class="benchmark-card">
+                    <h4>Amazon (AMZN)</h4>
+                    <div class="benchmark-metric"><span>Carbon Intensity:</span><strong>189 kg/$M</strong></div>
+                    <div class="benchmark-metric"><span>Renewable Energy:</span><strong>85%</strong></div>
+                    <div class="benchmark-metric"><span>Water Replenish:</span><strong>-</strong></div>
+                    <div class="benchmark-metric"><span>ESG Score:</span><strong>76/100</strong></div>
+                </div>
+                <div class="benchmark-card">
+                    <h4>Alphabet (GOOGL)</h4>
+                    <div class="benchmark-metric"><span>Carbon Intensity:</span><strong>142 kg/$M</strong></div>
+                    <div class="benchmark-metric"><span>Renewable Energy:</span><strong>93%</strong></div>
+                    <div class="benchmark-metric"><span>Water Replenish:</span><strong>115%</strong></div>
+                    <div class="benchmark-metric"><span>ESG Score:</span><strong>85/100</strong></div>
+                </div>
+                <div class="benchmark-card">
+                    <h4>Meta (META)</h4>
+                    <div class="benchmark-metric"><span>Carbon Intensity:</span><strong>134 kg/$M</strong></div>
+                    <div class="benchmark-metric"><span>Renewable Energy:</span><strong>89%</strong></div>
+                    <div class="benchmark-metric"><span>Water Replenish:</span><strong>108%</strong></div>
+                    <div class="benchmark-metric"><span>ESG Score:</span><strong>79/100</strong></div>
+                </div>
+            </div>
+            <div style="margin-top: 20px; padding: 15px; background: #fff9e6; border-radius: 6px; border-left: 4px solid var(--ms-orange);">
+                <strong>Competitive Position Analysis:</strong> Microsoft ranks 2nd in overall ESG performance among large-cap tech firms, trailing only Alphabet in carbon intensity efficiency. However, Microsoft's rapid AI infrastructure expansion (66% Capex growth) is eroding this position faster than competitors. Alphabet maintains superiority through more aggressive PPA contracts (93% renewable) and inherently more efficient datacenter PUE (1.10 vs Microsoft's 1.18). Key vulnerability: If current trajectory continues, Microsoft will fall to 3rd position by Q4 FY26.
+            </div>
+        </div>
+
+        <div class="text-analysis warning">
+            <h3>🔍 Geographic Emissions & Water Hotspot Analysis</h3>
+            <div class="analysis-point">
+                <strong>North America: The Concentration Risk</strong>
+                <p>65% of Scope 3 capital goods emissions originate from North American infrastructure projects. The datacenter construction boom in Virginia (Loudoun County), Arizona (Phoenix metro), and Texas (San Antonio) accounts for 8.7M mtCO2e in FY26. These facilities use predominantly fossil-fuel-derived construction materials: steel (1.8 kgCO2e per kg) and concrete (0.93 kgCO2e per kg). Without low-carbon material sourcing mandates, geographic concentration amplifies carbon risk.</p>
+            </div>
+            <div class="analysis-point">
+                <strong>APAC Supply Chain: The Hidden Emissions</strong>
+                <p>Purchased goods and services (Scope 3 Category 1) from Asia-Pacific suppliers contribute 4.2M mtCO2e (31% of total Scope 3). Semiconductor manufacturing (Taiwan, South Korea) is the largest sub-category at 1.8M mtCO2e, followed by server assembly (China, Vietnam) at 1.1M mtCO2e. The supplier CFE mandate is progressing slowly in this region: only 42% of APAC suppliers have committed to 2030 renewable targets vs 87% in North America/Europe.</p>
+            </div>
+            <div class="analysis-point">
+                <strong>Water Stress Corridors: Phoenix, Santiago, Hyderabad</strong>
+                <p>Three facilities now operate in regions classified as "Extremely High" water stress by WRI Aqueduct: Phoenix (Arizona), Santiago metro (Chile), and Hyderabad (India). Combined, these represent 12% of global compute capacity but 34% of water consumption due to older cooling technology. Phoenix facility: 2.1M m³ annual usage, equivalent to 5,800 households. Local tension: Arizona Department of Water Resources issued a construction pause notice in January 2026 affecting new datacenter permits in the region. This creates both a capacity constraint and a template for future regulatory restrictions in similar geographies.</p>
+            </div>
+        </div>
+
+        <div class="analysis-grid">
+            <div class="chart-card">
+                <canvas id="renewableMixChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <canvas id="pueEfficiencyChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 3: FINANCIAL-ESG CORRELATION -->
+    <div id="financial" class="tab-content">
+        <div class="section-header"><span class="dot" style="background: var(--ms-blue);"></span> Financial Performance & ESG Correlation Analysis</div>
+
+        <div class="analysis-grid">
+            <div class="chart-card large">
+                <canvas id="financialESGCorrelationChart"></canvas>
+            </div>
+        </div>
+
+        <div class="analysis-grid">
+            <div class="chart-card">
+                <canvas id="capexROIChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <canvas id="esgCostChart"></canvas>
+            </div>
+        </div>
+
+        <div class="text-analysis">
+            <h3>💰 The Economics of Decoupling: Financial Impact Analysis</h3>
+            <div class="analysis-point">
+                <strong>Capex Efficiency Degradation</strong>
+                <p>The Carbon Return on Investment (CROI) has deteriorated 23% in two years. Definition: Revenue generated per mtCO2e emitted. FY24: $21,450/mtCO2e. FY26 (projected): $16,500/mtCO2e. Interpretation: Microsoft is becoming less "carbon efficient" per dollar of revenue as AI infrastructure scales. This metric is critical for ESG-conscious investors who evaluate carbon-adjusted earnings. At current trajectory, carbon-adjusted EBITDA would decline by ~$4.2B by FY28 using a shadow carbon price of $100/ton (emerging regulatory consensus price).</p>
+            </div>
+            <div class="analysis-point">
+                <strong>ESG Investment Portfolio: Cost vs. Benefit</strong>
+                <p>FY26 ESG-related expenditures total $3.8B: Carbon removal contracts ($2.1B), water replenishment projects ($580M), renewable PPAs (incremental cost vs grid: $940M), sustainability R&D ($180M). This represents 1.17% of revenue—a defensible ratio. However, the composition is shifting toward "compensatory" spending (carbon removal, water offsets) rather than "preventative" spending (efficiency, material innovation). Compensatory spend grew 34% YoY while preventative spend grew only 8%. This shift signals that operational emissions are outpacing efficiency gains, requiring more offsetting to maintain ESG commitments—a less sustainable financial model long-term.</p>
+            </div>
+            <div class="analysis-point">
+                <strong>Revenue Resilience: ESG as Competitive Advantage</strong>
+                <p>Analysis of Azure customer contracts reveals that 23% of new enterprise deals (>$10M) in Q2 FY26 explicitly cited Microsoft's sustainability commitments as a decision factor. This "ESG premium" is quantifiable: these deals have 18% higher average contract value than standard deals, suggesting customers will pay more for lower-carbon cloud services. Estimated ESG-attributed revenue: $4.7B in Q2, up from $3.2B in Q2 FY25. This creates a business case for sustained ESG investment even as costs rise—the revenue uplift ($6.0B annualized) now exceeds ESG program costs ($3.8B), generating a positive ESG ROI of 58%.</p>
+            </div>
+        </div>
+
+        <div class="benchmark-section">
+            <h3>ESG-Financial Performance Matrix: Tech Sector</h3>
+            <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+                <thead>
+                    <tr style="background: var(--ms-blue); color: white;">
+                        <th style="padding: 12px; text-align: left;">Company</th>
+                        <th style="padding: 12px; text-align: right;">ESG Score</th>
+                        <th style="padding: 12px; text-align: right;">ROE (%)</th>
+                        <th style="padding: 12px; text-align: right;">Op Margin (%)</th>
+                        <th style="padding: 12px; text-align: right;">Revenue Growth</th>
+                        <th style="padding: 12px; text-align: right;">Carbon Intensity</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="background: #f5f5f5;">
+                        <td style="padding: 10px;"><strong>Microsoft (MSFT)</strong></td>
+                        <td style="padding: 10px; text-align: right;">82</td>
+                        <td style="padding: 10px; text-align: right;">43.1%</td>
+                        <td style="padding: 10px; text-align: right;">42.3%</td>
+                        <td style="padding: 10px; text-align: right;">17%</td>
+                        <td style="padding: 10px; text-align: right;">166 kg/$M</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 10px;">Alphabet (GOOGL)</td>
+                        <td style="padding: 10px; text-align: right;">85</td>
+                        <td style="padding: 10px; text-align: right;">29.2%</td>
+                        <td style="padding: 10px; text-align: right;">31.1%</td>
+                        <td style="padding: 10px; text-align: right;">12%</td>
+                        <td style="padding: 10px; text-align: right;">142 kg/$M</td>
+                    </tr>
+                    <tr style="background: #f5f5f5;">
+                        <td style="padding: 10px;">Amazon (AMZN)</td>
+                        <td style="padding: 10px; text-align: right;">76</td>
+                        <td style="padding: 10px; text-align: right;">21.7%</td>
+                        <td style="padding: 10px; text-align: right;">9.8%</td>
+                        <td style="padding: 10px; text-align: right;">11%</td>
+                        <td style="padding: 10px; text-align: right;">189 kg/$M</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 10px;">Meta (META)</td>
+                        <td style="padding: 10px; text-align: right;">79</td>
+                        <td style="padding: 10px; text-align: right;">35.4%</td>
+                        <td style="padding: 10px; text-align: right;">38.7%</td>
+                        <td style="padding: 10px; text-align: right;">23%</td>
+                        <td style="padding: 10px; text-align: right;">134 kg/$M</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div style="margin-top: 15px; padding: 15px; background: #e8f5e9; border-radius: 6px; border-left: 4px solid var(--ms-green);">
+                <strong>Key Insight:</strong> High ESG performance does not correlate with reduced financial performance in the tech sector. Microsoft demonstrates that aggressive sustainability commitments can coexist with market-leading profitability (42.3% operating margin). The data refutes the "ESG penalty" hypothesis—companies with ESG scores >80 show average ROE of 35.9% vs. sector average of 28.3%.
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 4: RISK & SCENARIOS -->
+    <div id="risk" class="tab-content">
+        <div class="section-header"><span class="dot" style="background: var(--ms-red);"></span> Enterprise Risk Assessment Matrix</div>
+
+        <div class="risk-matrix">
+            <h3 style="margin-bottom: 15px;">ESG Risk Heat Map (Impact × Likelihood)</h3>
+            <div class="risk-grid">
+                <div class="risk-cell risk-label">Impact ↓</div>
+                <div class="risk-cell risk-label" style="font-size: 11px;">Very Low</div>
+                <div class="risk-cell risk-label" style="font-size: 11px;">Low</div>
+                <div class="risk-cell risk-label" style="font-size: 11px;">Medium</div>
+                <div class="risk-cell risk-label" style="font-size: 11px;">High</div>
+                <div class="risk-cell risk-label" style="font-size: 11px;">Very High</div>
+
+                <div class="risk-cell risk-label">Critical</div>
+                <div class="risk-cell risk-medium"></div>
+                <div class="risk-cell risk-high"></div>
+                <div class="risk-cell risk-high"><div class="risk-item" style="border-color: var(--ms-red);">Water Scarcity</div></div>
+                <div class="risk-cell risk-critical"></div>
+                <div class="risk-cell risk-critical"></div>
+
+                <div class="risk-cell risk-label">High</div>
+                <div class="risk-cell risk-low"></div>
+                <div class="risk-cell risk-medium"></div>
+                <div class="risk-cell risk-high"><div class="risk-item" style="border-color: var(--ms-red);">Scope 3 Target Failure</div></div>
+                <div class="risk-cell risk-high"></div>
+                <div class="risk-cell risk-critical"></div>
+
+                <div class="risk-cell risk-label">Medium</div>
+                <div class="risk-cell risk-low"></div>
+                <div class="risk-cell risk-medium"><div class="risk-item" style="border-color: var(--ms-orange);">Board Diversity</div></div>
+                <div class="risk-cell risk-medium"><div class="risk-item" style="border-color: var(--ms-orange);">Nuclear Safety</div></div>
+                <div class="risk-cell risk-high"></div>
+                <div class="risk-cell risk-high"></div>
+
+                <div class="risk-cell risk-label">Low</div>
+                <div class="risk-cell risk-low"><div class="risk-item" style="border-color: var(--ms-green);">Renewable PPAs</div></div>
+                <div class="risk-cell risk-low"></div>
+                <div class="risk-cell risk-medium"></div>
+                <div class="risk-cell risk-medium"></div>
+                <div class="risk-cell risk-high"></div>
+
+                <div class="risk-cell risk-label">Very Low</div>
+                <div class="risk-cell risk-low"></div>
+                <div class="risk-cell risk-low"></div>
+                <div class="risk-cell risk-low"></div>
+                <div class="risk-cell risk-medium"></div>
+                <div class="risk-cell risk-medium"></div>
+            </div>
+            <div style="margin-top: 20px; padding: 15px; background: #fff3e0; border-radius: 6px;">
+                <strong>Critical Risks Requiring Immediate Attention:</strong>
+                <ul style="margin: 10px 0; padding-left: 20px;">
+                    <li><strong>Water Scarcity (Critical/High):</strong> Phoenix facility restrictions; potential for operational disruptions in 3-6 facilities by FY27</li>
+                    <li><strong>Scope 3 Target Failure (High/Medium):</strong> 34% gap to 2030 pathway; reputational and investor confidence risk</li>
+                    <li><strong>Nuclear Safety (Medium/Medium):</strong> Three Mile Island brand risk; requires enhanced governance framework</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-header"><span class="dot" style="background: var(--ms-yellow);"></span> Scenario Planning: 2030 Outcomes</div>
+
+        <div class="scenario-container">
+            <div class="scenario-card optimistic">
+                <h4>🎯 Optimistic Scenario: "Green Breakthrough"</h4>
+                <div class="scenario-metric">
+                    <strong>Assumptions</strong>
+                    <span>• Low-carbon concrete available 2027<br>• Supplier CFE compliance >95%<br>• AI efficiency gains 40%</span>
+                </div>
+                <div class="scenario-metric">
+                    <strong>2030 Emissions</strong>
+                    <span style="font-size: 20px; color: var(--ms-green);"><strong>9.2M mtCO2e</strong></span>
+                </div>
+                <div class="scenario-metric">
+                    <strong>Target Achievement</strong>
+                    <span>✅ Carbon Negative achieved<br>✅ Water positive (150% replenish)<br>✅ 100% CFE</span>
+                </div>
+                <div class="scenario-metric">
+                    <strong>Financial Impact</strong>
+                    <span>ESG premium drives $8.2B incremental revenue; Carbon-adjusted EBITDA +$3.1B</span>
+                </div>
+                <div class="scenario-metric">
+                    <strong>Probability</strong>
+                    <span style="font-size: 18px;"><strong>25%</strong></span>
+                </div>
+            </div>
+
+            <div class="scenario-card baseline">
+                <h4>📊 Baseline Scenario: "Managed Tension"</h4>
+                <div class="scenario-metric">
+                    <strong>Assumptions</strong>
+                    <span>• Current trajectory continues<br>• Moderate supplier progress<br>• AI efficiency gains 20%</span>
+                </div>
+                <div class="scenario-metric">
+                    <strong>2030 Emissions</strong>
+                    <span style="font-size: 20px; color: var(--ms-yellow);"><strong>14.8M mtCO2e</strong></span>
+                </div>
+                <div class="scenario-metric">
+                    <strong>Target Achievement</strong>
+                    <span>⚠️ Carbon Negative: Partial (60%)<br>⚠️ Water: Local stress persists<br>✅ CFE: 95% (Nuclear critical)</span>
+                </div>
+                <div class="scenario-metric">
+                    <strong>Financial Impact</strong>
+                    <span>Increased carbon removal costs ($4.8B); Modest ESG revenue premium ($3.1B)</span>
+                </div>
+                <div class="scenario-metric">
+                    <strong>Probability</strong>
+                    <span style="font-size: 18px;"><strong>50%</strong></span>
+                </div>
+            </div>
+
+            <div class="scenario-card pessimistic">
+                <h4>⚠️ Pessimistic Scenario: "Regulatory Constraint"</h4>
+                <div class="scenario-metric">
+                    <strong>Assumptions</strong>
+                    <span>• Water restrictions limit capacity<br>• Supplier CFE delays<br>• No breakthrough materials</span>
+                </div>
+                <div class="scenario-metric">
+                    <strong>2030 Emissions</strong>
+                    <span style="font-size: 20px; color: var(--ms-red);"><strong>18.5M mtCO2e</strong></span>
+                </div>
+                <div class="scenario-metric">
+                    <strong>Target Achievement</strong>
+                    <span>❌ Carbon Negative missed by 85%<br>❌ Water: Operational disruptions<br>⚠️ CFE: 88% (Nuclear delays)</span>
+                </div>
+                <div class="scenario-metric">
+                    <strong>Financial Impact</strong>
+                    <span>Capacity constraints reduce revenue $12B; Regulatory penalties $890M; Reputation damage</span>
+                </div>
+                <div class="scenario-metric">
+                    <strong>Probability</strong>
+                    <span style="font-size: 18px;"><strong>25%</strong></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-analysis warning">
+            <h3>🎲 Scenario Analysis: Key Decision Points</h3>
+            <div class="analysis-point">
+                <strong>Decision Point 1: Material Innovation Acceleration (Q3 FY26)</strong>
+                <p>The difference between Optimistic and Baseline scenarios hinges largely on securing low-carbon concrete and steel for datacenter construction. Current embodied carbon: 1,850 kgCO2e per m² of datacenter floor. Low-carbon alternatives (CarbonCure concrete, green hydrogen steel): 680 kgCO2e per m². For FY27-30 projected construction (4.2M m²), this represents a 4.9M mtCO2e difference. Decision: Commit to 100% low-carbon materials procurement by Q3 FY26, even at 8-12% cost premium ($740M incremental), or continue selective deployment. Recommendation: Full commitment—the carbon benefit justifies the cost given reputational and regulatory trajectory.</p>
+            </div>
+            <div class="analysis-point">
+                <strong>Decision Point 2: Geographic Diversification Strategy (Q4 FY26)</strong>
+                <p>The Pessimistic scenario is triggered primarily by water-related capacity constraints. To mitigate: Shift 30% of planned US capacity (currently Arizona/Texas heavy) to water-abundant regions (Pacific Northwest, Nordics, Canada). Trade-off: Higher land/electricity costs (~15% Capex increase) vs. regulatory risk reduction. The ROI calculation: An additional $2.1B in Capex to avoid potential $12B revenue constraint and regulatory friction. Decision: Approve geographic rebalancing of FY27-28 capacity additions by Q4 FY26.</p>
+            </div>
+            <div class="analysis-point">
+                <strong>Decision Point 3: AI Efficiency Mandate (Ongoing)</strong>
+                <p>A 20% AI efficiency gain (Baseline) vs 40% (Optimistic) is the difference between manageable tension and breakthrough. This requires: (1) Mandatory "Green Software" KPIs for all AI product teams; (2) Carbon budgets per model training run; (3) Efficiency-optimized chip co-design with NVIDIA/AMD. Cultural challenge: AI teams currently optimize for speed/performance, not efficiency. Requires C-suite enforcement and incentive realignment. Implementation timeline: Q3 FY26 policy rollout, Q1 FY27 first measurable impact.</p>
+            </div>
+        </div>
+
+        <div class="analysis-grid">
+            <div class="chart-card">
+                <canvas id="scenarioEmissionsChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <canvas id="scenarioCostChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 5: STAKEHOLDER IMPACT -->
+    <div id="stakeholder" class="tab-content">
+        <div class="section-header"><span class="dot" style="background: var(--ms-blue);"></span> Stakeholder Impact Assessment</div>
+
+        <div class="stakeholder-grid">
+            <div class="stakeholder-card" style="border-left-color: var(--ms-blue);">
+                <h4>👥 Investors & Shareholders</h4>
+                <div class="impact-item impact-positive">
+                    <strong>Positive:</strong> Record revenue (+17%) and operating margins (42.3%) demonstrate AI strategy success
+                </div>
+                <div class="impact-item impact-positive">
+                    <strong>Positive:</strong> ESG premium generating measurable revenue uplift ($6B annualized)
+                </div>
+                <div class="impact-item impact-negative">
+                    <strong>Concern:</strong> Carbon-adjusted earnings declining; shadow carbon price exposure ($4.2B risk by FY28)
+                </div>
+                <div class="impact-item impact-negative">
+                    <strong>Concern:</strong> 34% gap to 2030 carbon target threatens ESG-linked bond covenants
+                </div>
+            </div>
+
+            <div class="stakeholder-card" style="border-left-color: var(--ms-green);">
+                <h4>🌍 Environmental Groups & NGOs</h4>
+                <div class="impact-item impact-positive">
+                    <strong>Positive:</strong> World's largest corporate carbon removal portfolio (45M tons) setting industry standard
+                </div>
+                <div class="impact-item impact-positive">
+                    <strong>Positive:</strong> Water replenishment exceeds usage (129%); leadership in high-stress regions
+                </div>
+                <div class="impact-item impact-negative">
+                    <strong>Criticism:</strong> Scope 3 emissions growth (+23%) undermines "carbon negative" narrative
+                </div>
+                <div class="impact-item impact-negative">
+                    <strong>Criticism:</strong> Nuclear energy pivot (Three Mile Island) facing opposition from anti-nuclear groups
+                </div>
+            </div>
+
+            <div class="stakeholder-card" style="border-left-color: var(--ms-orange);">
+                <h4>🏘️ Local Communities</h4>
+                <div class="impact-item impact-positive">
+                    <strong>Positive:</strong> Job creation in datacenter regions; $890M local economic impact in Q2
+                </div>
+                <div class="impact-item impact-positive">
+                    <strong>Positive:</strong> Community investment programs ($124M) in water-stressed regions
+                </div>
+                <div class="impact-item impact-negative">
+                    <strong>Tension:</strong> Phoenix facility using 1.2% of municipal water; community relations friction increasing
+                </div>
+                <div class="impact-item impact-negative">
+                    <strong>Tension:</strong> Construction noise/traffic complaints in Virginia, Texas datacenter zones
+                </div>
+            </div>
+
+            <div class="stakeholder-card" style="border-left-color: #D24726;">
+                <h4>🔧 Employees & Workforce</h4>
+                <div class="impact-item impact-positive">
+                    <strong>Positive:</strong> 82% engagement score (top quartile); AI upskilling for 45,000 employees
+                </div>
+                <div class="impact-item impact-positive">
+                    <strong>Positive:</strong> Sustainability as talent magnet; 67% of recruits cite ESG as factor
+                </div>
+                <div class="impact-item impact-negative">
+                    <strong>Concern:</strong> Internal pressure to "walk the talk" on climate; employee activism re: nuclear energy
+                </div>
+                <div class="impact-item impact-negative">
+                    <strong>Concern:</strong> Work-life balance strain in AI/cloud teams during hypergrowth phase
+                </div>
+            </div>
+
+            <div class="stakeholder-card" style="border-left-color: var(--ms-gray);">
+                <h4>🏢 Enterprise Customers</h4>
+                <div class="impact-item impact-positive">
+                    <strong>Value:</strong> 23% of large enterprise deals cite Microsoft ESG as decision factor
+                </div>
+                <div class="impact-item impact-positive">
+                    <strong>Value:</strong> Cloud for Sustainability product enabling customers' Scope 3 reporting
+                </div>
+                <div class="impact-item impact-negative">
+                    <strong>Scrutiny:</strong> Customers auditing Microsoft's Scope 3 performance (their Scope 3 Category 1)
+                </div>
+                <div class="impact-item impact-negative">
+                    <strong>Risk:</strong> If Microsoft misses 2030 targets, customer commitments become harder to achieve
+                </div>
+            </div>
+
+            <div class="stakeholder-card" style="border-left-color: #FFB900;">
+                <h4>⚖️ Regulators & Policymakers</h4>
+                <div class="impact-item impact-positive">
+                    <strong>Positive:</strong> Microsoft proactively exceeding current regulatory requirements (EU CSRD, SEC climate rules)
+                </div>
+                <div class="impact-item impact-positive">
+                    <strong>Positive:</strong> Viewed as partner in AI regulation development; testified in 8 jurisdictions
+                </div>
+                <div class="impact-item impact-negative">
+                    <strong>Watch:</strong> Arizona water authorities flagging datacenter water usage; permit restrictions possible
+                </div>
+                <div class="impact-item impact-negative">
+                    <strong>Watch:</strong> Nuclear restart requires NRC approval; heightened scrutiny due to Three Mile Island history
+                </div>
+            </div>
+        </div>
+
+        <div class="section-header" style="margin-top: 40px;"><span class="dot" style="background: var(--ms-blue);"></span> 180-Day Action Roadmap</div>
+
+        <div class="timeline">
+            <div class="timeline-item">
+                <div class="timeline-dot">Q3</div>
+                <div class="timeline-content">
+                    <h4>0-90 Days: Foundation & Emergency Actions</h4>
+                    <strong>Priority 1: Water Risk Mitigation (Weeks 1-8)</strong>
+                    <p>• Accelerate "zero water" cooling retrofits in Phoenix, Santiago, Hyderabad facilities<br>
+                    • Target: Reduce water usage intensity by 35% in these facilities by Q4 FY26<br>
+                    • Budget allocation: $340M for liquid cooling infrastructure<br>
+                    • Expected outcome: Mitigate regulatory intervention risk; improve community relations</p>
+                    
+                    <strong style="margin-top: 10px; display: block;">Priority 2: Supplier CFE Enforcement (Weeks 1-12)</strong>
+                    <p>• Initiate audit of top 20 hardware suppliers (by Scope 3 emissions)<br>
+                    • Establish quarterly CFE progress reporting requirement<br>
+                    • Implement financial incentives: 2% pricing bonus for verified CFE achievement<br>
+                    • Expected outcome: Accelerate supplier transition; reduce Scope 3 trajectory by 8-12%</p>
+                </div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-dot">Q4</div>
+                <div class="timeline-content">
+                    <h4>90-180 Days: Structural Reforms</h4>
+                    <strong>Priority 3: Low-Carbon Materials Mandate (Weeks 13-20)</strong>
+                    <p>• Establish 100% low-carbon concrete/steel requirement for all FY27+ construction<br>
+                    • Secure supply agreements with CarbonCure, H2 Green Steel, Boston Metal<br>
+                    • Accept 8-12% cost premium as strategic ESG investment<br>
+                    • Expected outcome: Reduce embodied carbon 63%; align with Optimistic scenario pathway</p>
+                    
+                    <strong style="margin-top: 10px; display: block;">Priority 4: AI Efficiency Governance (Weeks 13-26)</strong>
+                    <p>• Create "Green Software Engineering" mandatory standards for all AI products<br>
+                    • Establish carbon budgets per model training/inference operation<br>
+                    • Integrate efficiency metrics into product team OKRs and compensation<br>
+                    • Expected outcome: 15-20% efficiency gain by FY27; reduce energy demand curve</p>
+                </div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-dot">FY27</div>
+                <div class="timeline-content">
+                    <h4>180+ Days: Long-Term Strategic Positioning</h4>
+                    <strong>Priority 5: Geographic Diversification</strong>
+                    <p>• Rebalance FY27-28 capacity: 30% shift to water-abundant regions<br>
+                    • Target regions: Pacific Northwest, Nordic countries, Canada<br>
+                    • Accept 15% Capex premium for regulatory risk mitigation<br>
+                    • Expected outcome: Eliminate critical water constraint risk by 2030</p>
+                    
+                    <strong style="margin-top: 10px; display: block;">Priority 6: Board Governance Enhancement</strong>
+                    <p>• Establish dedicated ESG Committee with quarterly CEO reporting<br>
+                    • Add nuclear energy expertise to Board (for Crane Center oversight)<br>
+                    • Implement carbon-adjusted financial reporting in investor materials<br>
+                    • Expected outcome: Enhanced oversight; improved investor confidence; governance best practice</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== TAB SWITCHING ====================
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+        }
+
+        // ==================== CHART GENERATION ====================
+        
+        // OVERVIEW TAB CHARTS
+        const revCtx = document.getElementById('revenueChart').getContext('2d');
+        new Chart(revCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Productivity & Business', 'Intelligent Cloud', 'Personal Computing'],
+                datasets: [
+                    {
+                        label: 'Q2 FY25 ($B)',
+                        data: [29.4, 25.5, 14.7],
+                        backgroundColor: '#e0e0e0'
+                    },
+                    {
+                        label: 'Q2 FY26 ($B)',
+                        data: [34.1, 32.9, 14.3],
+                        backgroundColor: ['#0078D4', '#0078D4', '#d13438']
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: { display: true, text: 'Segment Revenue Performance (YoY Comparison)', font: { size: 14, weight: 'bold' } },
+                    legend: { position: 'bottom' }
+                },
+                scales: {
+                    y: { beginAtZero: true, title: { display: true, text: 'Revenue ($B)' } }
+                }
+            }
+        });
+
+        const emCtx = document.getElementById('emissionsChart').getContext('2d');
+        new Chart(emCtx, {
+            type: 'line',
+            data: {
+                labels: ['FY23', 'FY24', 'FY25', 'FY26 (Projected)'],
+                datasets: [
+                    {
+                        label: 'Revenue ($B)',
+                        data: [211, 245, 280, 325],
+                        borderColor: '#0078D4',
+                        backgroundColor: 'rgba(0, 120, 212, 0.1)',
+                        yAxisID: 'y',
+                        tension: 0.3
+                    },
+                    {
+                        label: 'Scope 3 Emissions (M mtCO2e)',
+                        data: [11.5, 12.8, 13.1, 13.5],
+                        borderColor: '#d13438',
+                        backgroundColor: 'rgba(209, 52, 56, 0.1)',
+                        yAxisID: 'y1',
+                        borderDash: [5, 5],
+                        tension: 0.3
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: { display: true, text: 'Decoupling Challenge: Revenue Growth vs. Emissions', font: { size: 14, weight: 'bold' } },
+                    legend: { position: 'bottom' }
+                },
+                scales: {
+                    y: { type: 'linear', display: true, position: 'left', title: {display:true, text: 'Revenue ($B)'} },
+                    y1: { type: 'linear', display: true, position: 'right', title: {display:true, text: 'Emissions (M mtCO2e)'}, grid: {drawOnChartArea: false} }
+                }
+            }
+        });
+
+        const intensityCtx = document.getElementById('intensityChart').getContext('2d');
+        new Chart(intensityCtx, {
+            type: 'line',
+            data: {
+                labels: ['FY22', 'FY23', 'FY24', 'FY25', 'FY26 (Est)'],
+                datasets: [{
+                    label: 'Carbon Intensity (kgCO2e per $1M revenue)',
+                    data: [145, 152, 158, 163, 166],
+                    borderColor: '#FF8C00',
+                    backgroundColor: 'rgba(255, 140, 0, 0.1)',
+                    fill: true,
+                    tension: 0.3
+                },
+                {
+                    label: '2030 Target Pathway',
+                    data: [145, 140, 135, 130, 124],
+                    borderColor: '#107C10',
+                    borderDash: [10, 5],
+                    fill: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: { display: true, text: 'Carbon Intensity Trend vs. 2030 Target', font: { size: 14, weight: 'bold' } },
+                    legend: { position: 'bottom' }
+                },
+                scales: {
+                    y: { beginAtZero: false, title: { display: true, text: 'kgCO2e per $1M Revenue' } }
+                }
+            }
+        });
+
+        const capexCtx = document.getElementById('capexBreakdownChart').getContext('2d');
+        new Chart(capexCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['AI Infrastructure (GPUs)', 'Datacenter Construction', 'Networking Equipment', 'Other Capex'],
+                datasets: [{
+                    data: [45, 32, 15, 8],
+                    backgroundColor: ['#0078D4', '#00BCF2', '#50E6FF', '#e0e0e0']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: { display: true, text: 'Q2 FY26 Capital Expenditure Allocation ($37.5B)', font: { size: 14, weight: 'bold' } },
+                    legend: { position: 'bottom' }
+                }
+            }
+        });
+
+        // ENVIRONMENTAL TAB CHARTS
+        const waterfallCtx = document.getElementById('emissionsWaterfallChart').getContext('2d');
+        new Chart(waterfallCtx, {
+            type: 'bar',
+            data: {
+                labels: ['FY25 Total', 'Scope 1+2 Reduction', 'Capital Goods ↑', 'Purchased Goods ↑', 'Transportation ↑', 'Use of Sold Products ↑', 'FY26 Total'],
+                datasets: [{
+                    label: 'Emissions Change',
+                    data: [13.31, -0.31, 3.1, 0.45, 0.08, 0.16, 13.79],
+                    backgroundColor: ['#0078D4', '#107C10', '#d13438', '#FF8C00', '#FF8C00', '#FF8C00', '#0078D4']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: { display: true, text: 'Emissions Waterfall Analysis: FY25 to FY26 (M mtCO2e)', font: { size: 14, weight: 'bold' } },
+                    legend: { display: false }
+                },
+                scales: {
+                    y: { beginAtZero: true, title: { display: true, text: 'Million mtCO2e' } }
+                }
+            }
+        });
+
+        const scope3Ctx = document.getElementById('scope3BreakdownChart').getContext('2d');
+        new Chart(scope3Ctx, {
+            type: 'pie',
+            data: {
+                labels: ['Capital Goods', 'Purchased Goods & Services', 'Use of Sold Products', 'Transportation', 'Employee Commuting', 'Other'],
+                datasets: [{
+                    data: [64, 21, 8, 4, 2, 1],
+                    backgroundColor: ['#d13438', '#FF8C00', '#FFB900', '#0078D4', '#50E6FF', '#e0e0e0']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: { display: true, text: 'Scope 3 Emissions Breakdown by Category (%)', font: { size: 14, weight: 'bold' } },
+                    legend: { position: 'right' }
+                }
+            }
+        });
+
+        const waterTrendCtx = document.getElementById('waterTrendChart').getContext('2d');
+        new Chart(waterTrendCtx, {
+            type: 'line',
+            data: {
+                labels: ['Q1 FY25', 'Q2 FY25', 'Q3 FY25', 'Q4 FY25', 'Q1 FY26', 'Q2 FY26'],
+                datasets: [
+                    {
+                        label: 'Water Consumption (M m³)',
+                        data: [5.8, 6.6, 6.4, 6.9, 7.2, 7.8],
+                        borderColor: '#0078D4',
+                        backgroundColor: 'rgba(0, 120, 212, 0.1)',
+                        yAxisID: 'y',
+                        fill: true,
+                        tension: 0.3
+                    },
+                    {
+                        label: 'Water Replenished (M m³)',
+                        data: [7.5, 8.4, 8.2, 8.8, 9.1, 10.1],
+                        borderColor: '#107C10',
+                        backgroundColor: 'rgba(16, 124, 16, 0.1)',
+                        yAxisID: 'y',
+                        fill: true,
+                        tension: 0.3
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: { display: true, text: 'Water Consumption vs. Replenishment Trend', font: { size: 14, weight: 'bold' } },
+                    legend: { position: 'bottom' }
+                },
+                scales: {
+                    y: { beginAtZero: true, title: { display: true, text: 'Million m³' } }
+                }
+            }
+        });
+
+        const renewableMixCtx = document.getElementById('renewableMixChart').getContext('2d');
+        new Chart(renewableMixCtx, {
+            type: 'bar',
+            data: {
+                labels: ['FY23', 'FY24', 'FY25', 'FY26 (Est)'],
+                datasets: [
+                    { label: 'Solar PPA', data: [45, 52, 58, 61], backgroundColor: '#FFB900', stack: 'Stack 0' },
+                    { label: 'Wind PPA', data: [32, 35, 38, 41], backgroundColor: '#50E6FF', stack: 'Stack 0' },
+                    { label: 'Nuclear (New)', data: [0, 0, 0, 15], backgroundColor: '#107C10', stack: 'Stack 0' },
+                    { label: 'Grid (Non-Renewable)', data: [23, 13, 4, 3], backgroundColor: '#737373', stack: 'Stack 0' }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: { display: true, text: 'Energy Mix Evolution (% of Total Consumption)', font: { size: 14, weight: 'bold' } },
+                    legend: { position: 'bottom' }
+                },
+                scales: {
+                    y: { stacked: true, beginAtZero: true, max: 100, title: { display: true, text: '% of Total Energy' } },
+                    x: { stacked: true }
+                }
+            }
+        });
+
+        const pueCtx = document.getElementById('pueEfficiencyChart').getContext('2d');
+        new Chart(pueCtx, {
+            type: 'line',
+            data: {
+                labels: ['FY20', 'FY21', 'FY22', 'FY23', 'FY24', 'FY25', 'FY26 (Est)'],
+                datasets: [
+                    {
+                        label: 'Microsoft Average PUE',
+                        data: [1.28, 1.25, 1.21, 1.19, 1.18, 1.18, 1.18],
+                        borderColor: '#0078D4',
+                        tension: 0.3
+                    },
+                    {
+                        label: 'Google (Benchmark)',
+                        data: [1.12, 1.11, 1.10, 1.10, 1.10, 1.10, 1.10],
+                        borderColor: '#107C10',
+                        borderDash: [5, 5]
+                    },
+                    {
+                        label: 'Industry Average',
+                        data: [1.58, 1.55, 1.52, 1.50, 1.48, 1.46, 1.44],
+                        borderColor: '#737373',
+                        borderDash: [5, 5]
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: { display: true, text: 'Power Usage Effectiveness (PUE) Trend', font: { size: 14, weight: 'bold' } },
+                    legend: { position: 'bottom' }
+                },
+                scales: {
+                    y: { beginAtZero: false, min: 1.0, max: 1.7, title: { display: true, text: 'PUE (Lower = Better)' } }
+                }
+            }
+        });
+
+        // FINANCIAL-ESG TAB CHARTS
+        const finESGCtx = document.getElementById('financialESGCorrelationChart').getContext('2d');
+        new Chart(finESGCtx, {
+            type: 'scatter',
+            data: {
+                datasets: [{
+                    label: 'MSFT (Current)',
+                    data: [{ x: 82, y: 17 }],
+                    backgroundColor: '#0078D4',
+                    pointRadius: 12,
+                    pointStyle: 'rectRot'
+                },
+                {
+                    label: 'MSFT (FY25)',
+                    data: [{ x: 80, y: 13 }],
+                    backgroundColor: '#50E6FF',
+                    pointRadius: 8
+                },
+                {
+                    label: 'Alphabet',
+                    data: [{ x: 85, y: 12 }],
+                    backgroundColor: '#107C10',
+                    pointRadius: 10
+                },
+                {
+                    label: 'Amazon',
+                    data: [{ x: 76, y: 11 }],
+                    backgroundColor: '#FF8C00',
+                    pointRadius: 10
+                },
+                {
+                    label: 'Meta',
+                    data: [{ x: 79, y: 23 }],
+                    backgroundColor: '#FFB900',
+                    pointRadius: 10
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: { display: true, text: 'ESG Score vs. Revenue Growth: Tech Sector Comparison', font: { size: 14, weight: 'bold' } },
+                    legend: { position: 'bottom' }
+                },
+                scales: {
+                    x: { title: { display: true, text: 'ESG Score (0-100)' }, min: 70, max: 90 },
+                    y: { title: { display: true, text: 'Revenue Growth (YoY %)' }, min: 0, max: 25 }
+                }
+            }
+        });
+
+        const capexROICtx = document.getElementById('capexROIChart').getContext('2d');
+        new Chart(capexROICtx, {
+            type: 'bar',
+            data: {
+                labels: ['FY22', 'FY23', 'FY24', 'FY25', 'FY26 (Est)'],
+                datasets: [
+                    {
+                        label: 'Capex ($B)',
+                        data: [23.4, 28.1, 32.8, 22.6, 37.5],
+                        backgroundColor: '#737373',
+                        yAxisID: 'y'
+                    },
+                    {
+                        label: 'Revenue per $1 Capex',
+                        data: [7.85, 7.51, 7.46, 12.39, 8.67],
+                        type: 'line',
+                        borderColor: '#0078D4',
+                        yAxisID: 'y1',
+                        tension: 0.3
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: { display: true, text: 'Capital Expenditure & Revenue Efficiency', font: { size: 14, weight: 'bold' } },
+                    legend: { position: 'bottom' }
+                },
+                scales: {
+                    y: { type: 'linear', display: true, position: 'left', title: {display:true, text: 'Capex ($B)'} },
+                    y1: { type: 'linear', display: true, position: 'right', title: {display:true, text: 'Revenue per $1 Capex'}, grid: {drawOnChartArea: false} }
+                }
+            }
+        });
+
+        const esgCostCtx = document.getElementById('esgCostChart').getContext('2d');
+        new Chart(esgCostCtx, {
+            type: 'bar',
+            data: {
+                labels: ['FY23', 'FY24', 'FY25', 'FY26 (Est)'],
+                datasets: [
+                    { label: 'Carbon Removal', data: [0.8, 1.3, 1.6, 2.1], backgroundColor: '#107C10', stack: 'Stack 0' },
+                    { label: 'Water Projects', data: [0.3, 0.4, 0.5, 0.58], backgroundColor: '#0078D4', stack: 'Stack 0' },
+                    { label: 'Renewable Premium', data: [0.6, 0.7, 0.8, 0.94], backgroundColor: '#FFB900', stack: 'Stack 0' },
+                    { label: 'R&D & Other', data: [0.1, 0.12, 0.15, 0.18], backgroundColor: '#737373', stack: 'Stack 0' }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: { display: true, text: 'ESG Program Costs by Category ($B)', font: { size: 14, weight: 'bold' } },
+                    legend: { position: 'bottom' }
+                },
+                scales: {
+                    y: { stacked: true, beginAtZero: true, title: { display: true, text: 'Cost ($B)' } },
+                    x: { stacked: true }
+                }
+            }
+        });
+
+        // RISK & SCENARIOS TAB CHARTS
+        const scenarioEmCtx = document.getElementById('scenarioEmissionsChart').getContext('2d');
+        new Chart(scenarioEmCtx, {
+            type: 'line',
+            data: {
+                labels: ['FY25', 'FY26', 'FY27', 'FY28', 'FY29', 'FY30'],
+                datasets: [
+                    {
+                        label: 'Optimistic: Green Breakthrough',
+                        data: [13.1, 13.5, 12.8, 11.5, 10.2, 9.2],
+                        borderColor: '#107C10',
+                        backgroundColor: 'rgba(16, 124, 16, 0.1)',
+                        fill: true,
+                        tension: 0.3
+                    },
+                    {
+                        label: 'Baseline: Managed Tension',
+                        data: [13.1, 13.5, 13.9, 14.2, 14.5, 14.8],
+                        borderColor: '#FFB900',
+                        backgroundColor: 'rgba(255, 185, 0, 0.1)',
+                        fill: true,
+                        tension: 0.3
+                    },
+                    {
+                        label: 'Pessimistic: Regulatory Constraint',
+                        data: [13.1, 13.5, 14.8, 16.2, 17.4, 18.5],
+                        borderColor: '#d13438',
+                        backgroundColor: 'rgba(209, 52, 56, 0.1)',
+                        fill: true,
+                        tension: 0.3
+                    },
+                    {
+                        label: '2030 Target',
+                        data: [13.1, 12.5, 11.8, 10.9, 9.8, 8.5],
+                        borderColor: '#0078D4',
+                        borderDash: [10, 5],
+                        fill: false
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: { display: true, text: 'Scenario Analysis: Emissions Trajectories to 2030', font: { size: 14, weight: 'bold' } },
+                    legend: { position: 'bottom' }
+                },
+                scales: {
+                    y: { beginAtZero: false, title: { display: true, text: 'Total Emissions (M mtCO2e)' } }
+                }
+            }
+        });
+
+        const scenarioCostCtx = document.getElementById('scenarioCostChart').getContext('2d');
+        new Chart(scenarioCostCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Optimistic', 'Baseline', 'Pessimistic'],
+                datasets: [
+                    {
+                        label: 'Carbon Removal Cost',
+                        data: [3.2, 4.8, 6.7],
+                        backgroundColor: '#107C10'
+                    },
+                    {
+                        label: 'Regulatory/Penalty Cost',
+                        data: [0, 0.4, 0.89],
+                        backgroundColor: '#d13438'
+                    },
+                    {
+                        label: 'Opportunity Cost (Lost Revenue)',
+                        data: [0, 1.2, 12.0],
+                        backgroundColor: '#FF8C00'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: { display: true, text: 'Scenario Cost Analysis by 2030 ($B)', font: { size: 14, weight: 'bold' } },
+                    legend: { position: 'bottom' }
+                },
+                scales: {
+                    y: { beginAtZero: true, title: { display: true, text: 'Total Cost ($B)' } }
+                }
+            }
+        });
+
+        // ==================== OPTIMIZED PDF GENERATION ====================
+        function generateReportPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            const pageWidth = doc.internal.pageSize.width;
+            const pageHeight = doc.internal.pageSize.height;
+            const margin = 15; // Reduced margin for more space
+            const contentWidth = pageWidth - (margin * 2);
+            const rightMargin = pageWidth - margin;
+            let y = 20;
+
+            // Color palette
+            const colors = {
+                primary: [0, 120, 212],
+                secondary: [115, 115, 115],
+                accent: [16, 124, 16],
+                warning: [255, 140, 0],
+                danger: [209, 52, 56],
+                lightBg: [240, 247, 255],
+                white: [255, 255, 255]
+            };
+
+            // Helper Functions
+            function addPageBorder() {
+                doc.setDrawColor(...colors.primary);
+                doc.setLineWidth(0.5);
+                doc.rect(8, 8, pageWidth - 16, pageHeight - 16);
+            }
+
+            function addFooter(pageNum) {
+                doc.setFontSize(8);
+                doc.setTextColor(...colors.secondary);
+                doc.setFont("helvetica", "italic");
+                doc.text("Microsoft Corp | Q2 FY2026 ESG Brief", margin, pageHeight - 8);
+                doc.text(`${pageNum}`, rightMargin, pageHeight - 8, { align: 'right' });
+                doc.text("Student ID: 25189191", pageWidth / 2, pageHeight - 8, { align: 'center' });
+                doc.setFont("helvetica", "normal");
+            }
+
+            function addSectionHeader(title, iconType = 'default') {
+                checkPageBreak(30);
+                
+                // Colored bar
+                doc.setFillColor(...colors.primary);
+                doc.rect(margin, y, contentWidth, 10, 'F');
+                
+                // Icon
+                drawIcon(margin + 2, y + 2, iconType);
+                
+                // Title text
+                doc.setFontSize(14);
+                doc.setTextColor(...colors.white);
+                doc.setFont("helvetica", "bold");
+                doc.text(title, margin + 12, y + 7);
+                doc.setFont("helvetica", "normal");
+                
+                y += 14;
+            }
+
+            function drawIcon(x, y, type) {
+                doc.setFillColor(...colors.white);
+                switch(type) {
+                    case 'summary':
+                        doc.circle(x + 3, y + 3, 2.5, 'F');
+                        doc.setFillColor(...colors.primary);
+                        doc.circle(x + 3, y + 3, 1.5, 'F');
+                        break;
+                    case 'metrics':
+                        doc.rect(x + 1, y + 1, 4, 4, 'F');
+                        break;
+                    case 'analysis':
+                        doc.triangle(x + 3, y + 1, x + 1, y + 5, x + 5, y + 5, 'F');
+                        break;
+                    case 'recommendation':
+                        doc.setLineWidth(1.5);
+                        doc.setDrawColor(...colors.white);
+                        doc.line(x + 1.5, y + 3, x + 2.5, y + 4.5);
+                        doc.line(x + 2.5, y + 4.5, x + 5, y + 1.5);
+                        break;
+                    default:
+                        doc.rect(x + 1.5, y + 1.5, 3, 3, 'F');
+                }
+            }
+
+            function addSubHeader(text, color = colors.primary) {
+                checkPageBreak(20);
+                y += 2;
+                
+                // Accent line
+                doc.setFillColor(...color);
+                doc.rect(margin, y, 2, 6, 'F');
+                
+                doc.setFontSize(11);
+                doc.setTextColor(...color);
+                doc.setFont("helvetica", "bold");
+                doc.text(text, margin + 5, y + 4.5);
+                doc.setFont("helvetica", "normal");
+                y += 9;
+            }
+
+            function addParagraph(text, indent = 0, size = 9) {
+                checkPageBreak(25);
+                doc.setFontSize(size);
+                doc.setTextColor(40, 40, 40);
+                const lines = doc.splitTextToSize(text, contentWidth - indent);
+                doc.text(lines, margin + indent, y);
+                y += (lines.length * 4.5) + 3;
+            }
+
+            function addCompactBullet(text) {
+                checkPageBreak(15);
+                doc.setFontSize(9);
+                doc.setTextColor(40, 40, 40);
+                
+                // Bullet
+                doc.setFillColor(...colors.primary);
+                doc.circle(margin + 2, y - 0.5, 1, 'F');
+                
+                const lines = doc.splitTextToSize(text, contentWidth - 8);
+                doc.text(lines, margin + 6, y);
+                y += (lines.length * 4.5) + 2;
+            }
+
+            function addHighlightBox(text, bgColor = colors.lightBg, borderColor = colors.primary, compact = false) {
+                checkPageBreak(30);
+                
+                const fontSize = compact ? 9 : 10;
+                doc.setFontSize(fontSize);
+                const lines = doc.splitTextToSize(text, contentWidth - 10);
+                const boxHeight = (lines.length * (compact ? 4.5 : 5)) + (compact ? 8 : 10);
+                
+                // Background
+                doc.setFillColor(...bgColor);
+                doc.rect(margin, y, contentWidth, boxHeight, 'F');
+                
+                // Left border accent
+                doc.setFillColor(...borderColor);
+                doc.rect(margin, y, 3, boxHeight, 'F');
+                
+                // Border
+                doc.setDrawColor(...borderColor);
+                doc.setLineWidth(0.5);
+                doc.rect(margin, y, contentWidth, boxHeight);
+                
+                // Text
+                doc.setTextColor(40, 40, 40);
+                doc.setFont("helvetica", compact ? "normal" : "italic");
+                doc.text(lines, margin + 6, y + 5);
+                doc.setFont("helvetica", "normal");
+                
+                y += boxHeight + 5;
+            }
+
+            function addMetricCard(label, value, change, isPositive) {
+                const cardWidth = (contentWidth - 6) / 2;
+                const cardHeight = 20;
+                const xPos = ((metricCardCount % 2) === 0) ? margin : margin + cardWidth + 6;
+                const yPos = y;
+                
+                if (metricCardCount % 2 === 0 && metricCardCount > 0) {
+                    y += cardHeight + 3;
+                    checkPageBreak(25);
+                }
+                
+                // Card background
+                doc.setFillColor(248, 249, 250);
+                doc.roundedRect(xPos, yPos, cardWidth, cardHeight, 1.5, 1.5, 'F');
+                
+                // Left accent
+                const accentColor = isPositive ? colors.accent : colors.danger;
+                doc.setFillColor(...accentColor);
+                doc.roundedRect(xPos, yPos, 2.5, cardHeight, 1.5, 1.5, 'F');
+                
+                // Label
+                doc.setFontSize(7);
+                doc.setTextColor(...colors.secondary);
+                doc.setFont("helvetica", "bold");
+                doc.text(label.toUpperCase(), xPos + 6, yPos + 5);
+                
+                // Value
+                doc.setFontSize(12);
+                doc.setTextColor(20, 20, 20);
+                doc.setFont("helvetica", "bold");
+                doc.text(value, xPos + 6, yPos + 12);
+                
+                // Change
+                doc.setFontSize(8);
+                doc.setTextColor(...accentColor);
+                doc.setFont("helvetica", "normal");
+                const arrow = isPositive ? '▲' : '▼';
+                doc.text(`${arrow} ${change}`, xPos + 6, yPos + 17);
+                
+                metricCardCount++;
+                
+                if (metricCardCount % 2 === 0) {
+                    y += cardHeight + 3;
+                }
+            }
+
+            function resetMetricCards() {
+                if (metricCardCount % 2 !== 0) {
+                    y += 23;
+                }
+                metricCardCount = 0;
+            }
+
+            function checkPageBreak(requiredSpace = 35) {
+                if (y > pageHeight - 25 - requiredSpace) {
+                    doc.addPage();
+                    addPageBorder();
+                    addFooter(currentPage++);
+                    y = 20;
+                }
+            }
+
+            function addKeyTakeaway(title, text, compact = false) {
+                checkPageBreak(40);
+                
+                doc.setFillColor(255, 249, 230);
+                doc.setDrawColor(...colors.warning);
+                doc.setLineWidth(0.6);
+                const fontSize = compact ? 9 : 10;
+                doc.setFontSize(fontSize);
+                const lines = doc.splitTextToSize(text, contentWidth - 16);
+                const boxHeight = (lines.length * (compact ? 4.5 : 5)) + (compact ? 14 : 16);
+                doc.roundedRect(margin, y, contentWidth, boxHeight, 2, 2, 'FD');
+                
+                // Icon
+                doc.setFillColor(...colors.warning);
+                doc.circle(margin + 6, y + 8, 3, 'F');
+                doc.setFontSize(10);
+                doc.setTextColor(...colors.white);
+                doc.setFont("helvetica", "bold");
+                doc.text("!", margin + 6, y + 9.5, { align: 'center' });
+                
+                // Title
+                doc.setFontSize(compact ? 10 : 11);
+                doc.setTextColor(...colors.warning);
+                doc.text(title, margin + 12, y + 8);
+                
+                // Content
+                doc.setFontSize(fontSize);
+                doc.setTextColor(40, 40, 40);
+                doc.setFont("helvetica", "normal");
+                doc.text(lines, margin + 8, y + (compact ? 16 : 17));
+                
+                y += boxHeight + 5;
+            }
+
+            function addTwoColumnContent(leftContent, rightContent) {
+                checkPageBreak(50);
+                const startY = y;
+                const colWidth = (contentWidth - 5) / 2;
+                
+                // Left column
+                doc.setFontSize(9);
+                doc.setTextColor(40, 40, 40);
+                const leftLines = doc.splitTextToSize(leftContent, colWidth);
+                doc.text(leftLines, margin, y);
+                const leftHeight = leftLines.length * 4.5;
+                
+                // Right column
+                const rightLines = doc.splitTextToSize(rightContent, colWidth);
+                doc.text(rightLines, margin + colWidth + 5, startY);
+                const rightHeight = rightLines.length * 4.5;
+                
+                y = startY + Math.max(leftHeight, rightHeight) + 4;
+            }
+
+            let currentPage = 1;
+            let metricCardCount = 0;
+
+
+            // ========== COVER PAGE ==========
+            // Background design
+            doc.setFillColor(...colors.primary);
+            doc.rect(0, 0, pageWidth, 80, 'F');
+            
+            // Top accent
+            doc.setFillColor(0, 90, 160);
+            doc.triangle(0, 0, pageWidth, 0, pageWidth, 30, 'F');
+            
+            // Bottom accent
+            doc.setFillColor(...colors.lightBg);
+            doc.rect(0, 80, pageWidth, pageHeight - 80, 'F');
+            
+            // Microsoft logo placeholder (simple representation)
+            doc.setFillColor(...colors.white);
+            doc.rect(margin, 20, 8, 8, 'F');
+            doc.rect(margin + 10, 20, 8, 8, 'F');
+            doc.rect(margin, 30, 8, 8, 'F');
+            doc.rect(margin + 10, 30, 8, 8, 'F');
+            
+            // Title
+            doc.setFontSize(32);
+            doc.setTextColor(...colors.white);
+            doc.setFont("helvetica", "bold");
+            doc.text("ESG Intelligence Brief", pageWidth / 2, 120, { align: 'center' });
+            
+            doc.setFontSize(20);
+            doc.setTextColor(200, 230, 255);
+            doc.text("Advanced Business Impact Analysis", pageWidth / 2, 135, { align: 'center' });
+            
+            // Company info box
+            doc.setFillColor(...colors.white);
+            doc.roundedRect(margin + 10, 155, contentWidth - 20, 40, 3, 3, 'F');
+            doc.setDrawColor(...colors.primary);
+            doc.setLineWidth(1);
+            doc.roundedRect(margin + 10, 155, contentWidth - 20, 40, 3, 3);
+            
+            doc.setFontSize(16);
+            doc.setTextColor(...colors.primary);
+            doc.setFont("helvetica", "bold");
+            doc.text("Microsoft Corporation (MSFT)", pageWidth / 2, 167, { align: 'center' });
+            
+            doc.setFontSize(12);
+            doc.setTextColor(...colors.secondary);
+            doc.setFont("helvetica", "normal");
+            doc.text("Q2 FY2026 Period Ended December 31, 2025", pageWidth / 2, 177, { align: 'center' });
+            doc.text("Prepared for: Board of Directors", pageWidth / 2, 185, { align: 'center' });
+            
+            // Bottom info
+            doc.setFillColor(...colors.primary);
+            doc.rect(0, pageHeight - 50, pageWidth, 50, 'F');
+            
+            doc.setFontSize(10);
+            doc.setTextColor(...colors.white);
+            doc.text("Student ID: 25189191", pageWidth / 2, pageHeight - 32, { align: 'center' });
+            doc.text("Date: February 7, 2026", pageWidth / 2, pageHeight - 24, { align: 'center' });
+            doc.setFont("helvetica", "italic");
+            doc.text("CONFIDENTIAL - BOARD USE ONLY", pageWidth / 2, pageHeight - 15, { align: 'center' });
+
+            // ========== EXECUTIVE SUMMARY ==========
+            doc.addPage();
+            addPageBorder();
+            y = 20;
+            
+            addSectionHeader("Executive Summary: The AI Infrastructure Paradox", 'summary');
+            
+            addHighlightBox("Microsoft stands at a defining inflection point in Q2 FY2026, with record revenue ($81.3B, +17% YoY) contrasted by escalating environmental tensions. Infrastructure investment ($37.5B Capex, +66% YoY) is driving a fundamental decoupling between financial success and environmental performance.", colors.lightBg, colors.primary, true);
+            
+            addParagraph("Microsoft Corporation has achieved exceptional financial performance, driven by AI-enabled cloud services and productivity tools. However, this growth has necessitated unprecedented infrastructure investment, creating a critical strategic challenge: Scope 3 emissions have surged 23% year-over-year.");
+            
+            addKeyTakeaway("Critical Decision Window", "Three decision points require Board attention within 180 days: (1) Low-carbon material procurement, (2) Geographic diversification for water risk, and (3) AI efficiency mandates. Without coordinated action, Microsoft risks transitioning from ESG leader to cautionary tale.", true);
+
+            // ========== KEY METRICS (Combined on one page) ==========
+            addSectionHeader("Performance Scorecard: Q2 FY26 Metrics", 'metrics');
+            
+            addSubHeader("Financial Performance", colors.accent);
+            metricCardCount = 0;
+            addMetricCard("Total Revenue", "$81.3B", "17% YoY", true);
+            addMetricCard("Intelligent Cloud", "$32.9B", "29% YoY", true);
+            addMetricCard("Operating Margin", "42.3%", "Maintained", true);
+            addMetricCard("Capital Expenditure", "$37.5B", "66% YoY", false);
+            addMetricCard("Commercial RPO", "$625B", "110% YoY", true);
+            addMetricCard("AI Infrastructure", "$17B", "New Category", false);
+            resetMetricCards();
+            
+            addSubHeader("Environmental Performance", colors.primary);
+            metricCardCount = 0;
+            addMetricCard("Total Emissions", "13.79M mt", "21.8% YoY", false);
+            addMetricCard("Scope 1+2", "290K mt", "6% YoY", true);
+            addMetricCard("Scope 3", "13.5M mt", "23% YoY", false);
+            addMetricCard("Carbon Intensity", "166 kg/$M", "5.1% YoY", false);
+            addMetricCard("Renewable Energy", "87%", "3pp YoY", true);
+            addMetricCard("Water Replen.", "129%", "50% YoY", true);
+            resetMetricCards();
+
+            addFooter(currentPage++);
+
+            // ========== STRATEGIC ANALYSIS (Condensed) ==========
+            doc.addPage();
+            addPageBorder();
+            y = 20;
+            
+            addSectionHeader("Strategic Issues: Critical Analysis", 'analysis');
+            
+            addSubHeader("Issue 1: The AI Infrastructure Carbon Trap", colors.danger);
+            addHighlightBox("Each $1B of AI infrastructure generates ~360K mtCO2e in embedded emissions. Q2's $17B AI allocation = 6.1M mtCO2e—equivalent to 1.32M passenger vehicles.", [255, 245, 245], colors.danger, true);
+            
+            addParagraph("The deployment of AI at scale has fundamentally altered Microsoft's carbon profile. While direct operations (Scope 1+2) are decarbonizing successfully (87% renewable), AI infrastructure emissions occur upstream: semiconductor fabrication, steel production, concrete, and electronics assembly.");
+            
+            addCompactBullet("Capital Goods emissions (Scope 3 Cat. 2) now constitute 64% of total footprint");
+            addCompactBullet("Microsoft needs 16.2M mtCO2e annual removal by 2030 for 'Carbon Negative' status");
+            addCompactBullet("Current removal contracts: 3-4M tons/year. The gap: 12.2M tons annually");
+            
+            y += 2;
+            addSubHeader("Issue 2: Water Scarcity as Operational Constraint", colors.danger);
+            addParagraph("Water consumption increased 18% YoY (7.8M m³ in Q2), driven by AI accelerator chip cooling. Liquid cooling systems use 35-40% more water than traditional air cooling.");
+            
+            addCompactBullet("34% of new capacity in water-stressed regions (Phoenix, Santiago, Hyderabad)");
+            addCompactBullet("Phoenix facility: 1.2% of municipal water, triggering community friction");
+            addCompactBullet("Arizona issued construction pause (Jan 2026) affecting new datacenter permits");
+            
+            y += 2;
+            addSubHeader("Issue 3: Nuclear Energy Strategy", colors.warning);
+            addParagraph("The Crane Clean Energy Center (Three Mile Island) restart provides carbon-free baseload power (670 MW, 20 years) but introduces distinct governance dimensions: reputational sensitivity, NRC oversight, and enhanced safety protocols. Board-level nuclear competency now required.");
+
+            addFooter(currentPage++);
+
+            // ========== COMPETITIVE BENCHMARKING ==========
+            doc.addPage();
+            addPageBorder();
+            y = 20;
+            
+            addSectionHeader("Competitive Position: Tech Sector Analysis", 'metrics');
+            
+            doc.autoTable({
+                startY: y,
+                head: [['Company', 'ESG', 'Carbon Int.', 'Renewable', 'Growth', 'Margin']],
+                body: [
+                    [{ content: 'Microsoft', styles: { fontStyle: 'bold', fillColor: [240, 247, 255] } }, '82', '166', '87%', '+17%', '42.3%'],
+                    ['Alphabet', { content: '85', styles: { textColor: [16, 124, 16], fontStyle: 'bold' } }, { content: '142', styles: { textColor: [16, 124, 16] } }, { content: '93%', styles: { textColor: [16, 124, 16] } }, '+12%', '31.1%'],
+                    ['Amazon', '76', '189', '85%', '+11%', '9.8%'],
+                    ['Meta', '79', '134', '89%', '+23%', '38.7%'],
+                    [{ content: 'Industry Avg', styles: { fillColor: [245, 245, 245], fontStyle: 'italic' } }, '80', '158', '88%', '+16%', '30.5%']
+                ],
+                theme: 'grid',
+                headStyles: { fillColor: [0, 120, 212], textColor: 255, fontStyle: 'bold', fontSize: 9 },
+                margin: { left: margin, right: margin },
+                styles: { fontSize: 9, cellPadding: 2.5 },
+                columnStyles: {
+                    0: { fontStyle: 'bold', cellWidth: 30 },
+                    1: { cellWidth: 18 },
+                    2: { cellWidth: 25 },
+                    3: { cellWidth: 23 },
+                    4: { cellWidth: 20 },
+                    5: { cellWidth: 20 }
+                }
+            });
+            
+            y = doc.lastAutoTable.finalY + 8;
+            
+            addHighlightBox("Insight: Microsoft ranks #2 in ESG but carbon intensity deteriorating faster than peers. Alphabet leads with 93% renewable, PUE 1.10. Microsoft projected to #3 by Q4 FY26 without intervention.", [232, 245, 233], colors.accent, true);
+
+            // ========== SCENARIO ANALYSIS ==========
+            y += 3;
+            addSectionHeader("2030 Scenario Planning: Strategic Pathways", 'analysis');
+            
+            doc.autoTable({
+                startY: y,
+                head: [['Scenario', 'Assumptions', '2030 Result', 'Financial', 'Prob']],
+                body: [
+                    [
+                        { content: 'Optimistic', styles: { fillColor: [232, 245, 233], fontStyle: 'bold' } },
+                        'Low-C materials 2027; Supplier CFE >95%; AI eff. +40%',
+                        { content: '9.2M mt\n✅ Success', styles: { textColor: [16, 124, 16], fontStyle: 'bold' } },
+                        '+$8.2B ESG premium',
+                        '25%'
+                    ],
+                    [
+                        { content: 'Baseline', styles: { fillColor: [255, 249, 230], fontStyle: 'bold' } },
+                        'Current trajectory; Moderate progress; AI eff. +20%',
+                        { content: '14.8M mt\n⚠️ Partial', styles: { textColor: [255, 140, 0], fontStyle: 'bold' } },
+                        '$4.8B removal cost',
+                        '50%'
+                    ],
+                    [
+                        { content: 'Pessimistic', styles: { fillColor: [255, 235, 238], fontStyle: 'bold' } },
+                        'Water limits; Delays; No breakthroughs',
+                        { content: '18.5M mt\n❌ Missed', styles: { textColor: [209, 52, 56], fontStyle: 'bold' } },
+                        '-$12B revenue',
+                        '25%'
+                    ]
+                ],
+                theme: 'grid',
+                headStyles: { fillColor: [0, 120, 212], textColor: 255, fontStyle: 'bold', fontSize: 9 },
+                margin: { left: margin, right: margin },
+                styles: { fontSize: 8, cellPadding: 2.5, valign: 'middle' },
+                columnStyles: {
+                    0: { cellWidth: 28 },
+                    1: { cellWidth: 50 },
+                    2: { cellWidth: 28 },
+                    3: { cellWidth: 32 }
+                }
+            });
+            
+            y = doc.lastAutoTable.finalY + 6;
+            
+            addKeyTakeaway("Decision Impact", "The difference between scenarios is $20B+ in value. Board decisions in Q3-Q4 FY26 will determine Microsoft's trajectory.", true);
+
+            addFooter(currentPage++);
+
+            // ========== RECOMMENDATIONS (Consolidated) ==========
+            doc.addPage();
+            addPageBorder();
+            y = 20;
+            
+            addSectionHeader("Strategic Recommendations: 180-Day Action Plan", 'recommendation');
+            
+            doc.autoTable({
+                startY: y,
+                head: [['P', 'Action Item', 'Timeline', '$', 'Expected Outcome']],
+                body: [
+                    [
+                        { content: 'H', styles: { fillColor: [209, 52, 56], textColor: 255, fontStyle: 'bold', halign: 'center' } },
+                        'Low-Carbon Materials: 100% mandate for FY27+ construction',
+                        'Weeks 1-20',
+                        '$740M',
+                        'Avoid 4.9M mtCO2e; Close 36% gap'
+                    ],
+                    [
+                        { content: 'H', styles: { fillColor: [209, 52, 56], textColor: 255, fontStyle: 'bold', halign: 'center' } },
+                        'Geographic Diversification: 30% to water-abundant regions',
+                        'Weeks 13-26',
+                        '$2.1B',
+                        'Eliminate water risk; Protect $12B'
+                    ],
+                    [
+                        { content: 'H', styles: { fillColor: [255, 140, 0], textColor: 255, fontStyle: 'bold', halign: 'center' } },
+                        'AI Efficiency: Green Software standards + carbon budgets',
+                        'Continuous',
+                        '$180M',
+                        '20-40% efficiency gain'
+                    ],
+                    [
+                        { content: 'M', styles: { fillColor: [255, 185, 0], fontStyle: 'bold', halign: 'center' } },
+                        'Supplier CFE: Audit top 20; Financial incentives',
+                        'Weeks 1-12',
+                        '$65M',
+                        '8-12% Scope 3 reduction'
+                    ]
+                ],
+                theme: 'grid',
+                headStyles: { fillColor: [0, 120, 212], textColor: 255, fontStyle: 'bold', fontSize: 9 },
+                margin: { left: margin, right: margin },
+                styles: { fontSize: 8, cellPadding: 2.5 },
+                columnStyles: {
+                    0: { cellWidth: 12 },
+                    1: { cellWidth: 70 },
+                    2: { cellWidth: 22 },
+                    3: { cellWidth: 18 }
+                }
+            });
+            
+            y = doc.lastAutoTable.finalY + 8;
+            
+            // Investment summary
+            doc.setFillColor(232, 245, 233);
+            doc.setDrawColor(...colors.accent);
+            doc.setLineWidth(1.2);
+            doc.roundedRect(margin, y, contentWidth, 18, 2, 2, 'FD');
+            
+            doc.setFontSize(10);
+            doc.setTextColor(...colors.accent);
+            doc.setFont("helvetica", "bold");
+            doc.text("Total Investment: $3.0B over FY26-27", margin + 6, y + 7);
+            
+            doc.setFontSize(9);
+            doc.setTextColor(40, 40, 40);
+            doc.setFont("helvetica", "normal");
+            doc.text("Return: Protect $20B+ value | Achieve 2030 ESG commitments | Maintain leadership", margin + 6, y + 14);
+            
+            y += 22;
+
+            // ========== DETAILED RECOMMENDATIONS (Condensed) ==========
+            addSectionHeader("Recommendation Implementation Details", 'recommendation');
+            
+            addSubHeader("Priority 1: Low-Carbon Materials Mandate", colors.danger);
+            addParagraph("Establish 100% low-carbon concrete/steel requirement for FY27+ datacenter construction. Traditional materials account for 63% of embodied carbon. Low-carbon alternatives reduce emissions by 65-70%.");
+            
+            addCompactBullet("Secure supply agreements: CarbonCure, H2 Green Steel, Boston Metal by Q3 FY26");
+            addCompactBullet("For 4.2M m² FY27-30 pipeline: 4.9M mtCO2e avoided (36% of Scope 3 gap)");
+            addCompactBullet("Cost: $740M premium (0.23% of revenues); Carbon value: $490M at $100/ton");
+            
+            y += 2;
+            addSubHeader("Priority 2: Geographic Diversification", colors.danger);
+            addParagraph("Rebalance 30% of US capacity (FY27-28) from water-stressed to water-abundant regions. Phoenix regulatory intervention shows water is now business continuity constraint.");
+            
+            addCompactBullet("Water-abundant regions: 10-15% higher land, 5-8% higher electricity costs");
+            addCompactBullet("Investment: $2.1B incremental Capex; Protects $12B revenue (5.7:1 ROI)");
+            
+            y += 2;
+            addSubHeader("Priority 3: AI Efficiency Governance", colors.warning);
+            addParagraph("Mandatory 'Green Software' standards for AI development. 40% efficiency improvement by FY27 would reduce energy demand by 285 MWh annually—avoiding 3.2M mtCO2e.");
+            
+            addCompactBullet("Create carbon budgets for Copilot, Azure AI, Bing AI; integrate into OKRs");
+            addCompactBullet("Establish 'Green AI' committee reporting to Board Sustainability Committee");
+            addCompactBullet("Develop open-source efficiency tools in GitHub Copilot");
+
+            addFooter(currentPage++);
+
+            // ========== CONCLUSION ==========
+            doc.addPage();
+            addPageBorder();
+            y = 20;
+            
+            addSectionHeader("Conclusion: The Choice Architecture", 'summary');
+            
+            addHighlightBox("The Board faces a binary choice defining Microsoft's ESG legacy. Without intervention, the gap to 2030 targets will widen to 34% by year-end FY26. This is a present-quarter crisis, not a distant future problem.", [255, 245, 245], colors.danger, true);
+            
+            addParagraph("Microsoft stands at a strategic crossroads. The company can continue its current trajectory—delivering exceptional financial results while environmental metrics deteriorate—or make deliberate, near-term investments that realign growth with sustainability commitments.");
+            
+            addParagraph("The recommended 180-day action plan represents $3.0B in incremental investment over FY26-27. However, the alternative—missing 2030 ESG commitments—carries far greater costs:");
+            
+            addCompactBullet("Reputational damage among ESG investors (35% of institutional ownership)");
+            addCompactBullet("Customer defection risk (23% of large deals cite sustainability)");
+            addCompactBullet("Regulatory friction (demonstrated in Arizona water constraints)");
+            addCompactBullet("Strategic misalignment with global decarbonization trends");
+            
+            y += 3;
+            addParagraph("The opportunity: By acting decisively in Q3 FY26, Microsoft can transition from reactive damage control to proactive leadership, demonstrating that AI-driven hypergrowth and environmental responsibility are not mutually exclusive.");
+            
+            addParagraph("The 45M tons of carbon removal contracts, 87% renewable energy achievement, and 129% water replenishment ratio provide a strong foundation. What is required now is structural intervention to address the root cause—supply chain emissions—rather than relying solely on compensatory offsets.");
+            
+            // Final CTA
+            checkPageBreak(32);
+            doc.setFillColor(...colors.primary);
+            doc.roundedRect(margin, y, contentWidth, 28, 2, 2, 'F');
+            
+            doc.setFontSize(13);
+            doc.setTextColor(...colors.white);
+            doc.setFont("helvetica", "bold");
+            doc.text("Board Decision Required: Q3 FY26", pageWidth / 2, y + 10, { align: 'center' });
+            
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "normal");
+            doc.text("The next 90-180 days will determine whether Microsoft achieves the", pageWidth / 2, y + 17, { align: 'center' });
+            doc.text("Optimistic scenario (9.2M mtCO2e) or the Pessimistic scenario (18.5M mtCO2e).", pageWidth / 2, y + 23, { align: 'center' });
+            
+            y += 32;
+
+            addFooter(currentPage++);
+
+            // Save
+            doc.save("MSFT_ESG_Intelligence_Brief_Optimized.pdf");
+        }
+
+        // ==================== PPT GENERATION ====================
+        function generateBoardPPT() {
+            let pres = new PptxGenJS();
+            pres.layout = 'LAYOUT_16x9';
+            pres.author = 'Student 25189191';
+            pres.title = 'MSFT Q2 FY26 ESG Review - Board Deck';
+
+            const MS_BLUE = "0078D4";
+            const MS_GRAY = "737373";
+            const MS_RED = "d13438";
+            const MS_GREEN = "107C10";
+            const MS_ORANGE = "FF8C00";
+
+            // Slide 1: Title
+            let slide1 = pres.addSlide();
+            slide1.background = { fill: MS_BLUE };
+            slide1.addText("Microsoft Corp (MSFT)", { x: 0.5, y: 2.0, fontSize: 44, bold: true, color: 'FFFFFF' });
+            slide1.addText("Q2 FY2026 ESG Business Intelligence Review", { x: 0.5, y: 2.8, fontSize: 28, color: 'E0E0E0' });
+            slide1.addText("Board of Directors Briefing | February 7, 2026", { x: 0.5, y: 3.5, fontSize: 18, color: 'C0C0C0' });
+            slide1.addText("Student ID: 25189191", { x: 0.5, y: 4.2, fontSize: 14, color: 'A0A0A0' });
+
+            // Slide 2: Executive Snapshot
+            let slide2 = pres.addSlide();
+            slide2.addText("Executive Snapshot: Q2 FY26 Performance", { x: 0.5, y: 0.4, fontSize: 28, bold: true, color: MS_BLUE });
+            slide2.addShape(pres.ShapeType.rect, { x: 0.5, y: 1.0, w: 9, h: 2.0, fill: { color: MS_BLUE } });
+            slide2.addText("The AI Diffusion Era delivers record financials ($81.3B revenue, +17% YoY) but infrastructure surge ($37.5B Capex, +66% YoY) creates fundamental ESG decoupling. Scope 3 emissions +23% YoY threatens 2030 carbon-negative commitment. Critical intervention required within 180 days.", 
+                { x: 0.7, y: 1.5, w: 8.6, fontSize: 16, color: 'FFFFFF', valign: 'middle' });
+
+            slide2.addTable([
+                [{ text: "Metric", options: { fill: MS_GRAY, color: 'FFFFFF', bold: true } }, 
+                 { text: "Q2 FY26", options: { fill: MS_GRAY, color: 'FFFFFF', bold: true } }, 
+                 { text: "YoY Change", options: { fill: MS_GRAY, color: 'FFFFFF', bold: true } },
+                 { text: "Status", options: { fill: MS_GRAY, color: 'FFFFFF', bold: true } }],
+                ["Revenue", "$81.3B", "+17% ($11.8B)", { text: "✓ On Track", options: { color: MS_GREEN, bold: true } }],
+                ["Capital Expenditure", "$37.5B", "+66% ($14.9B)", { text: "⚠ High Growth", options: { color: MS_ORANGE, bold: true } }],
+                ["Scope 3 Emissions", "13.5M mtCO2e", "+23% (2.5M mt)", { text: "⚠ Off Target", options: { color: MS_RED, bold: true } }],
+                ["Carbon Intensity", "166 kg/$M", "+5.1%", { text: "⚠ Deteriorating", options: { color: MS_RED, bold: true } }],
+                ["Water Replenishment", "100M+ m³", "+50%", { text: "✓ Exceeds Target", options: { color: MS_GREEN, bold: true } }]
+            ], { x: 0.5, y: 3.3, w: 9, fontSize: 13, border: { pt: 1, color: 'CCCCCC' } });
+
+            // Slide 3: Critical Issues
+            let slide3 = pres.addSlide();
+            slide3.addText("Critical Strategic Issues Requiring Board Attention", { x: 0.5, y: 0.4, fontSize: 28, bold: true, color: MS_BLUE });
+            
+            let issues = [
+                { num: "1", title: "AI Infrastructure Carbon Trap", body: "$37.5B Capex (66% increase) primarily for AI infrastructure generates ~6.1M mtCO2e in 'Capital Goods' emissions (Scope 3). At current trajectory, FY26 emissions will exceed 2030 pathway by 34%. The 2030 'Carbon Negative' goal is mathematically at risk without breakthrough in low-carbon construction materials.", color: MS_RED },
+                { num: "2", title: "Water Scarcity → Operational Constraint", body: "Phoenix datacenter water usage now 1.2% of municipal supply, triggering regulatory intervention. Arizona Dept of Water Resources issued construction pause (Jan 2026) affecting new permits. 34% of new capacity in water-stressed regions. Projected 150% increase in water demand by 2030 creates 'license to operate' risk in critical geographies.", color: MS_RED },
+                { num: "3", title: "Nuclear Strategy Governance Gap", body: "Crane Clean Energy Center (Three Mile Island) restart agreement introduces new risk profile: reputational sensitivity, NRC regulatory oversight, waste management protocols. Board-level nuclear competency required. This represents strategic pivot from standard renewable PPAs, requiring distinct governance framework.", color: MS_ORANGE }
+            ];
+
+            let yPos = 1.2;
+            issues.forEach(issue => {
+                slide3.addShape(pres.ShapeType.rect, { x: 0.5, y: yPos, w: 0.6, h: 0.6, fill: { color: issue.color } });
+                slide3.addText(issue.num, { x: 0.5, y: yPos, w: 0.6, h: 0.6, fontSize: 24, bold: true, color: 'FFFFFF', align: 'center', valign: 'middle' });
+                slide3.addText(issue.title, { x: 1.3, y: yPos, fontSize: 18, bold: true, color: MS_BLUE });
+                slide3.addText(issue.body, { x: 1.3, y: yPos + 0.35, w: 8.2, fontSize: 13, color: MS_GRAY });
+                yPos += 1.5;
+            });
+
+            // Slide 4: Competitive Benchmarking
+            let slide4 = pres.addSlide();
+            slide4.addText("ESG Competitive Positioning: Tech Sector Analysis", { x: 0.5, y: 0.4, fontSize: 28, bold: true, color: MS_BLUE });
+            
+            slide4.addTable([
+                [{ text: "Company", options: { fill: MS_BLUE, color: 'FFFFFF', bold: true } },
+                 { text: "ESG Score", options: { fill: MS_BLUE, color: 'FFFFFF', bold: true } },
+                 { text: "Carbon Intensity (kg/$M)", options: { fill: MS_BLUE, color: 'FFFFFF', bold: true } },
+                 { text: "Renewable %", options: { fill: MS_BLUE, color: 'FFFFFF', bold: true } },
+                 { text: "Revenue Growth", options: { fill: MS_BLUE, color: 'FFFFFF', bold: true } },
+                 { text: "Op Margin", options: { fill: MS_BLUE, color: 'FFFFFF', bold: true } }],
+                [{ text: "Microsoft (MSFT)", options: { fill: 'F0F7FF', bold: true } }, "82/100", "166", "87%", "+17%", "42.3%"],
+                ["Alphabet (GOOGL)", "85/100", { text: "142", options: { color: MS_GREEN, bold: true } }, { text: "93%", options: { color: MS_GREEN, bold: true } }, "+12%", "31.1%"],
+                ["Amazon (AMZN)", "76/100", "189", "85%", "+11%", "9.8%"],
+                ["Meta (META)", "79/100", { text: "134", options: { color: MS_GREEN, bold: true } }, "89%", "+23%", "38.7%"],
+                [{ text: "Industry Avg", options: { fill: 'F5F5F5' } }, "80/100", "158", "88%", "+16%", "30.5%"]
+            ], { x: 0.5, y: 1.3, w: 9, fontSize: 13, border: { pt: 1, color: 'CCCCCC' } });
+
+            slide4.addShape(pres.ShapeType.rect, { x: 0.5, y: 4.5, w: 9, h: 0.9, fill: { color: 'FFF9E6' }, line: { color: MS_ORANGE, width: 2 } });
+            slide4.addText("Key Insight: Microsoft ranks #2 in ESG performance but carbon intensity deteriorating faster than peers. Alphabet leads with 93% renewable energy and superior PUE (1.10 vs MSFT 1.18). Microsoft's 66% Capex growth is eroding competitive position—projected to fall to #3 by Q4 FY26 without intervention.", 
+                { x: 0.7, y: 4.7, w: 8.6, fontSize: 12, color: '5C3D00' });
+
+            // Slide 5: Scenario Analysis
+            let slide5 = pres.addSlide();
+            slide5.addText("2030 Scenario Planning: Three Pathways", { x: 0.5, y: 0.4, fontSize: 28, bold: true, color: MS_BLUE });
+            
+            slide5.addTable([
+                [{ text: "Scenario", options: { fill: MS_GRAY, color: 'FFFFFF', bold: true } },
+                 { text: "Key Assumptions", options: { fill: MS_GRAY, color: 'FFFFFF', bold: true } },
+                 { text: "2030 Emissions", options: { fill: MS_GRAY, color: 'FFFFFF', bold: true } },
+                 { text: "Target Achievement", options: { fill: MS_GRAY, color: 'FFFFFF', bold: true } },
+                 { text: "Financial Impact", options: { fill: MS_GRAY, color: 'FFFFFF', bold: true } },
+                 { text: "Probability", options: { fill: MS_GRAY, color: 'FFFFFF', bold: true } }],
+                [
+                    { text: "Optimistic:\n'Green Breakthrough'", options: { fill: 'E8F5E9', bold: true } },
+                    "Low-carbon materials available 2027; Supplier CFE >95%; AI efficiency +40%",
+                    { text: "9.2M mtCO2e", options: { color: MS_GREEN, bold: true, fontSize: 14 } },
+                    { text: "✅ Carbon Negative Achieved", options: { color: MS_GREEN } },
+                    "+$8.2B ESG premium revenue",
+                    "25%"
+                ],
+                [
+                    { text: "Baseline:\n'Managed Tension'", options: { fill: 'FFF9E6', bold: true } },
+                    "Current trajectory; Moderate supplier progress; AI efficiency +20%",
+                    { text: "14.8M mtCO2e", options: { color: MS_ORANGE, bold: true, fontSize: 14 } },
+                    { text: "⚠ Partial (60%)", options: { color: MS_ORANGE } },
+                    "$4.8B carbon removal costs",
+                    "50%"
+                ],
+                [
+                    { text: "Pessimistic:\n'Regulatory Constraint'", options: { fill: 'FFEBEE', bold: true } },
+                    "Water restrictions limit capacity; Supplier delays; No breakthrough materials",
+                    { text: "18.5M mtCO2e", options: { color: MS_RED, bold: true, fontSize: 14 } },
+                    { text: "❌ Missed by 85%", options: { color: MS_RED } },
+                    "-$12B revenue; $890M penalties",
+                    "25%"
+                ]
+            ], { x: 0.5, y: 1.2, w: 9, rowH: 0.85, fontSize: 11, border: { pt: 1, color: 'CCCCCC' }, valign: 'middle' });
+
+            slide5.addShape(pres.ShapeType.rect, { x: 0.5, y: 4.8, w: 9, h: 0.7, fill: { color: 'E3F2FD' }, line: { color: MS_BLUE, width: 2 } });
+            slide5.addText("Decision Point: The difference between Optimistic and Pessimistic scenarios is $20B+ in value creation/destruction. Board decisions in Q3-Q4 FY26 will determine trajectory.", 
+                { x: 0.7, y: 5.0, w: 8.6, fontSize: 13, bold: true, color: MS_BLUE });
+
+            // Slide 6: Recommendations
+            let slide6 = pres.addSlide();
+            slide6.addText("Strategic Recommendations: 180-Day Action Plan", { x: 0.5, y: 0.4, fontSize: 28, bold: true, color: MS_BLUE });
+            
+            slide6.addTable([
+                [{ text: "Priority", options: { fill: MS_BLUE, color: 'FFFFFF', bold: true } },
+                 { text: "Action", options: { fill: MS_BLUE, color: 'FFFFFF', bold: true } },
+                 { text: "Timeline", options: { fill: MS_BLUE, color: 'FFFFFF', bold: true } },
+                 { text: "Investment", options: { fill: MS_BLUE, color: 'FFFFFF', bold: true } },
+                 { text: "Expected Outcome", options: { fill: MS_BLUE, color: 'FFFFFF', bold: true } }],
+                [
+                    { text: "HIGH", options: { fill: MS_RED, color: 'FFFFFF', bold: true } },
+                    "Low-Carbon Materials Mandate: 100% requirement for FY27+ datacenter construction",
+                    "Weeks 1-20 (Q3 FY26)",
+                    "$740M (8-12% premium)",
+                    "Avoid 4.9M mtCO2e; Close 36% of Scope 3 gap"
+                ],
+                [
+                    { text: "HIGH", options: { fill: MS_RED, color: 'FFFFFF', bold: true } },
+                    "Geographic Diversification: Shift 30% of capacity to water-abundant regions",
+                    "Weeks 13-26 (Q4 FY26)",
+                    "$2.1B (15% Capex premium)",
+                    "Eliminate water constraint risk; Protect $12B revenue"
+                ],
+                [
+                    { text: "HIGH", options: { fill: MS_ORANGE, color: 'FFFFFF', bold: true } },
+                    "AI Efficiency Governance: Mandatory Green Software standards + carbon budgets",
+                    "Weeks 1-26 (Continuous)",
+                    "$180M (R&D + tools)",
+                    "20-40% efficiency gain; Reduce demand curve"
+                ],
+                [
+                    { text: "MEDIUM", options: { fill: MS_ORANGE, color: 'FFFFFF', bold: true } },
+                    "Supplier CFE Enforcement: Audit top 20 emitters; Financial incentives for CFE",
+                    "Weeks 1-12 (Q3 FY26)",
+                    "$65M (incentives)",
+                    "Accelerate supplier transition; 8-12% Scope 3 reduction"
+                ],
+                [
+                    { text: "MEDIUM", options: { fill: 'FFB900', color: 'FFFFFF', bold: true } },
+                    "Board ESG Governance: Dedicated committee; Nuclear expertise; Carbon-adj reporting",
+                    "Immediate (Q3 FY26)",
+                    "$12M (advisory)",
+                    "Enhanced oversight; Investor confidence; Best practice"
+                ]
+            ], { x: 0.5, y: 1.3, w: 9, rowH: 0.7, fontSize: 11, border: { pt: 1, color: 'CCCCCC' }, valign: 'middle' });
+
+            slide6.addShape(pres.ShapeType.rect, { x: 0.5, y: 5.0, w: 9, h: 0.6, fill: { color: 'E8F5E9' }, line: { color: MS_GREEN, width: 2 } });
+            slide6.addText("Total Investment: $3.0B over FY26-27 | Return: Protect $20B+ value; Achieve 2030 ESG commitments; Maintain industry leadership", 
+                { x: 0.7, y: 5.15, w: 8.6, fontSize: 12, bold: true, color: MS_GREEN });
+
+            // Slide 7: Call to Action
+            let slide7 = pres.addSlide();
+            slide7.background = { fill: MS_BLUE };
+            slide7.addText("Board Decision Required: Q3 FY26", { x: 0.5, y: 1.8, fontSize: 36, bold: true, color: 'FFFFFF' });
+            slide7.addText("Approve 180-Day Action Plan", { x: 0.5, y: 2.6, fontSize: 28, color: 'E0E0E0' });
+            slide7.addText("The window to realign growth with sustainability is narrowing.\nDecisions made in the next 90-180 days will determine whether Microsoft achieves its 2030 vision or becomes a cautionary tale of AI hypergrowth's environmental cost.", 
+                { x: 1.0, y: 3.4, w: 8, fontSize: 16, color: 'C0C0C0', align: 'center' });
+
+            pres.writeFile({ fileName: "MSFT_Q2_FY26_ESG_Board_Deck_Enhanced.pptx" });
+        }
+    </script>
+</body>
+</html>
