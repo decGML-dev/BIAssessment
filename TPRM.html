@@ -1,0 +1,1968 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DORA ICT Third-Party Risk Management</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #F4F6F9;
+  --sidebar-bg: #0F1A2E;
+  --sidebar-hover: #1A2A44;
+  --sidebar-active: #243B5C;
+  --card: #FFFFFF;
+  --border: #DDE2EA;
+  --text: #1A1F2E;
+  --text-secondary: #5A6478;
+  --text-muted: #8A94A6;
+  --primary: #1B6EF3;
+  --primary-hover: #1558C9;
+  --primary-light: #E8F0FE;
+  --accent: #0EA574;
+  --accent-light: #E6F7F1;
+  --danger: #DC3545;
+  --danger-light: #FDEAEC;
+  --warning: #E8A317;
+  --warning-light: #FFF8E6;
+  --info: #0DCAF0;
+  --info-light: #E6FAFE;
+  --high: #DC3545;
+  --medium: #E8A317;
+  --low: #0EA574;
+  --critical: #8B0000;
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 10px 30px rgba(0,0,0,0.12);
+  --transition: 0.2s ease;
+  --font: 'IBM Plex Sans', -apple-system, sans-serif;
+  --mono: 'IBM Plex Mono', monospace;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body { height:100%; font-family:var(--font); background:var(--bg); color:var(--text); font-size:14px; line-height:1.5; }
+
+/* Layout */
+.app { display:flex; height:100vh; overflow:hidden; }
+.sidebar { width:250px; min-width:250px; background:var(--sidebar-bg); display:flex; flex-direction:column; z-index:100; }
+.sidebar-brand { padding:20px 22px; border-bottom:1px solid rgba(255,255,255,0.06); }
+.sidebar-brand h2 { color:#fff; font-size:15px; font-weight:700; letter-spacing:-0.3px; }
+.sidebar-brand span { color:var(--primary); }
+.sidebar-brand p { color:rgba(255,255,255,0.4); font-size:10px; letter-spacing:1.5px; text-transform:uppercase; margin-top:2px; }
+.sidebar-nav { flex:1; padding:12px 10px; overflow-y:auto; }
+.nav-item { display:flex; align-items:center; gap:12px; padding:10px 14px; border-radius:var(--radius); color:rgba(255,255,255,0.6); cursor:pointer; transition:var(--transition); font-size:13px; font-weight:500; margin-bottom:2px; }
+.nav-item:hover { background:var(--sidebar-hover); color:rgba(255,255,255,0.9); }
+.nav-item.active { background:var(--sidebar-active); color:#fff; }
+.nav-item svg { width:18px; height:18px; flex-shrink:0; }
+.nav-badge { margin-left:auto; background:var(--danger); color:#fff; font-size:10px; font-weight:700; padding:1px 7px; border-radius:10px; }
+.sidebar-footer { padding:14px 16px; border-top:1px solid rgba(255,255,255,0.06); }
+.sidebar-footer p { color:rgba(255,255,255,0.3); font-size:10px; text-align:center; }
+
+.main { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+.topbar { display:flex; align-items:center; gap:16px; padding:14px 28px; background:var(--card); border-bottom:1px solid var(--border); min-height:56px; }
+.search-box { flex:1; max-width:420px; position:relative; }
+.search-box input { width:100%; padding:8px 12px 8px 36px; border:1px solid var(--border); border-radius:var(--radius); font-size:13px; font-family:var(--font); outline:none; transition:var(--transition); background:var(--bg); }
+.search-box input:focus { border-color:var(--primary); box-shadow:0 0 0 3px rgba(27,110,243,0.1); }
+.search-box svg { position:absolute; left:10px; top:50%; transform:translateY(-50%); width:16px; height:16px; color:var(--text-muted); }
+.topbar-actions { display:flex; align-items:center; gap:10px; margin-left:auto; }
+
+.content { flex:1; overflow-y:auto; padding:24px 28px; }
+
+/* Cards */
+.card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius-lg); padding:20px 24px; margin-bottom:16px; box-shadow:var(--shadow); }
+.card-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+.card-title { font-size:16px; font-weight:700; letter-spacing:-0.3px; }
+.card-subtitle { font-size:12px; color:var(--text-secondary); margin-top:2px; }
+
+/* Buttons */
+.btn { display:inline-flex; align-items:center; gap:6px; padding:8px 16px; border-radius:var(--radius); font-family:var(--font); font-size:13px; font-weight:600; border:none; cursor:pointer; transition:var(--transition); white-space:nowrap; }
+.btn svg { width:15px; height:15px; }
+.btn-primary { background:var(--primary); color:#fff; }
+.btn-primary:hover { background:var(--primary-hover); }
+.btn-success { background:var(--accent); color:#fff; }
+.btn-success:hover { background:#0C8F65; }
+.btn-danger { background:var(--danger); color:#fff; }
+.btn-danger:hover { background:#B82D3B; }
+.btn-warning { background:var(--warning); color:#fff; }
+.btn-outline { background:transparent; border:1px solid var(--border); color:var(--text); }
+.btn-outline:hover { background:var(--bg); border-color:var(--text-muted); }
+.btn-sm { padding:5px 10px; font-size:12px; }
+.btn-xs { padding:3px 8px; font-size:11px; }
+.btn-icon { padding:6px; border-radius:6px; background:transparent; border:1px solid var(--border); cursor:pointer; color:var(--text-secondary); transition:var(--transition); }
+.btn-icon:hover { background:var(--bg); color:var(--text); }
+.btn-group { display:flex; gap:6px; }
+
+/* Badges */
+.badge { display:inline-flex; align-items:center; padding:2px 9px; border-radius:10px; font-size:11px; font-weight:600; letter-spacing:0.2px; }
+.badge-low { background:#E6F7F1; color:#0A7B56; }
+.badge-medium, .badge-med { background:#FFF3D6; color:#9A6C00; }
+.badge-high { background:#FDEAEC; color:#B82D3B; }
+.badge-critical { background:#5C0011; color:#FFB3B3; }
+.badge-info { background:var(--info-light); color:#0AA8C9; }
+.badge-primary { background:var(--primary-light); color:var(--primary); }
+.badge-success { background:var(--accent-light); color:var(--accent); }
+.badge-warning { background:var(--warning-light); color:#9A6C00; }
+.badge-danger { background:var(--danger-light); color:var(--danger); }
+.badge-neutral { background:#EBEEF2; color:var(--text-secondary); }
+
+/* Tables */
+.table-wrap { overflow-x:auto; }
+table { width:100%; border-collapse:collapse; font-size:13px; }
+th { text-align:left; padding:10px 12px; font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:0.5px; color:var(--text-muted); border-bottom:2px solid var(--border); background:var(--bg); position:sticky; top:0; }
+td { padding:10px 12px; border-bottom:1px solid var(--border); vertical-align:middle; }
+tr:hover td { background:rgba(27,110,243,0.02); }
+th.sortable { cursor:pointer; user-select:none; }
+th.sortable:hover { color:var(--text); }
+
+/* Forms */
+.form-group { margin-bottom:14px; }
+.form-label { display:block; font-size:12px; font-weight:600; color:var(--text-secondary); margin-bottom:4px; }
+.form-label .required { color:var(--danger); }
+.form-control { width:100%; padding:8px 12px; border:1px solid var(--border); border-radius:var(--radius); font-family:var(--font); font-size:13px; outline:none; transition:var(--transition); background:#fff; }
+.form-control:focus { border-color:var(--primary); box-shadow:0 0 0 3px rgba(27,110,243,0.1); }
+.form-control.error { border-color:var(--danger); }
+.form-error { font-size:11px; color:var(--danger); margin-top:2px; }
+select.form-control { cursor:pointer; }
+textarea.form-control { resize:vertical; min-height:70px; }
+.form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.form-row-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; }
+.form-check { display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer; }
+.form-check input { cursor:pointer; }
+
+/* Multi-select */
+.multi-select { position:relative; }
+.multi-select-display { padding:8px 12px; border:1px solid var(--border); border-radius:var(--radius); font-size:13px; cursor:pointer; min-height:36px; display:flex; flex-wrap:wrap; gap:4px; align-items:center; background:#fff; }
+.multi-select-display:focus-within { border-color:var(--primary); box-shadow:0 0 0 3px rgba(27,110,243,0.1); }
+.ms-tag { display:inline-flex; align-items:center; gap:4px; padding:1px 8px; background:var(--primary-light); color:var(--primary); border-radius:4px; font-size:11px; font-weight:500; }
+.ms-tag button { background:none; border:none; cursor:pointer; color:var(--primary); font-size:14px; line-height:1; padding:0; }
+.multi-select-dropdown { position:absolute; top:100%; left:0; right:0; background:#fff; border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow-md); z-index:50; max-height:200px; overflow-y:auto; display:none; }
+.multi-select-dropdown.open { display:block; }
+.ms-option { padding:6px 12px; cursor:pointer; font-size:13px; display:flex; align-items:center; gap:8px; }
+.ms-option:hover { background:var(--bg); }
+.ms-option.selected { background:var(--primary-light); }
+
+/* Modal */
+.modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:1000; display:flex; align-items:flex-start; justify-content:center; padding-top:40px; opacity:0; pointer-events:none; transition:opacity 0.2s; overflow-y:auto; }
+.modal-overlay.open { opacity:1; pointer-events:all; }
+.modal { background:var(--card); border-radius:var(--radius-lg); width:95%; max-width:680px; box-shadow:var(--shadow-lg); transform:translateY(-10px); transition:transform 0.2s; margin-bottom:40px; }
+.modal-overlay.open .modal { transform:translateY(0); }
+.modal-header { display:flex; align-items:center; justify-content:space-between; padding:18px 24px; border-bottom:1px solid var(--border); }
+.modal-title { font-size:16px; font-weight:700; }
+.modal-close { background:none; border:none; cursor:pointer; color:var(--text-muted); font-size:22px; padding:4px; line-height:1; }
+.modal-close:hover { color:var(--text); }
+.modal-body { padding:20px 24px; max-height:calc(100vh - 200px); overflow-y:auto; }
+.modal-footer { display:flex; justify-content:flex-end; gap:8px; padding:14px 24px; border-top:1px solid var(--border); }
+
+/* Toast */
+.toast-container { position:fixed; top:20px; right:20px; z-index:2000; display:flex; flex-direction:column; gap:8px; }
+.toast { padding:12px 18px; border-radius:var(--radius); font-size:13px; font-weight:500; color:#fff; box-shadow:var(--shadow-md); animation:toastIn 0.3s ease; min-width:280px; display:flex; align-items:center; gap:10px; }
+.toast-success { background:#0EA574; }
+.toast-error { background:#DC3545; }
+.toast-warning { background:#E8A317; }
+.toast-info { background:var(--primary); }
+@keyframes toastIn { from { opacity:0; transform:translateX(30px); } to { opacity:1; transform:translateX(0); } }
+
+/* KPI Grid */
+.kpi-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:14px; margin-bottom:20px; }
+.kpi-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius-lg); padding:18px 20px; box-shadow:var(--shadow); }
+.kpi-label { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.8px; color:var(--text-muted); margin-bottom:6px; }
+.kpi-value { font-size:28px; font-weight:700; letter-spacing:-1px; line-height:1.1; }
+.kpi-sub { font-size:11px; color:var(--text-secondary); margin-top:4px; }
+.kpi-card.kpi-accent { border-left:3px solid var(--primary); }
+.kpi-card.kpi-danger { border-left:3px solid var(--danger); }
+.kpi-card.kpi-warning { border-left:3px solid var(--warning); }
+.kpi-card.kpi-success { border-left:3px solid var(--accent); }
+
+/* Charts */
+.chart-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.chart-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius-lg); padding:20px; box-shadow:var(--shadow); }
+.chart-card h3 { font-size:13px; font-weight:700; margin-bottom:12px; }
+.chart-container { position:relative; height:220px; }
+
+/* Tabs */
+.tabs { display:flex; gap:0; border-bottom:2px solid var(--border); margin-bottom:18px; }
+.tab { padding:10px 18px; font-size:13px; font-weight:600; color:var(--text-muted); cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-2px; transition:var(--transition); }
+.tab:hover { color:var(--text); }
+.tab.active { color:var(--primary); border-bottom-color:var(--primary); }
+
+/* Filter bar */
+.filter-bar { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:14px; }
+.filter-bar select, .filter-bar input { padding:6px 10px; border:1px solid var(--border); border-radius:var(--radius); font-size:12px; font-family:var(--font); background:#fff; }
+
+/* Empty state */
+.empty-state { text-align:center; padding:60px 20px; color:var(--text-muted); }
+.empty-state svg { width:48px; height:48px; margin-bottom:12px; opacity:0.4; }
+.empty-state h3 { font-size:16px; color:var(--text-secondary); margin-bottom:6px; }
+.empty-state p { font-size:13px; margin-bottom:16px; }
+
+/* Provider detail */
+.detail-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:20px; }
+.detail-title { font-size:22px; font-weight:700; letter-spacing:-0.5px; }
+.detail-meta { display:flex; gap:8px; margin-top:6px; flex-wrap:wrap; }
+.detail-back { font-size:13px; color:var(--primary); cursor:pointer; margin-bottom:10px; display:inline-flex; align-items:center; gap:4px; }
+.detail-back:hover { text-decoration:underline; }
+
+/* Progress bar */
+.progress-bar { height:8px; background:var(--border); border-radius:4px; overflow:hidden; }
+.progress-fill { height:100%; border-radius:4px; transition:width 0.4s ease; }
+.progress-fill.green { background:var(--accent); }
+.progress-fill.yellow { background:var(--warning); }
+.progress-fill.red { background:var(--danger); }
+
+/* Control checklist */
+.control-domain { margin-bottom:18px; border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; }
+.control-domain-header { padding:12px 16px; background:var(--bg); display:flex; align-items:center; justify-content:space-between; cursor:pointer; font-weight:600; font-size:13px; }
+.control-domain-header:hover { background:#EBEEF2; }
+.control-item { padding:10px 16px; border-top:1px solid var(--border); display:flex; align-items:flex-start; gap:12px; font-size:13px; }
+.control-item-text { flex:1; }
+.control-status-select { padding:4px 8px; border:1px solid var(--border); border-radius:4px; font-size:11px; font-family:var(--font); font-weight:600; cursor:pointer; }
+.control-status-select.pass { background:#E6F7F1; color:#0A7B56; border-color:#0EA574; }
+.control-status-select.fail { background:#FDEAEC; color:#B82D3B; border-color:#DC3545; }
+.control-status-select.in-progress { background:#FFF3D6; color:#9A6C00; border-color:#E8A317; }
+.control-status-select.na { background:#EBEEF2; color:var(--text-muted); }
+.evidence-list { margin-top:6px; }
+.evidence-item { font-size:11px; color:var(--text-secondary); padding:2px 0; display:flex; align-items:center; gap:6px; }
+.evidence-item svg { width:12px; height:12px; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width:6px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:#C8CDD6; border-radius:3px; }
+::-webkit-scrollbar-thumb:hover { background:#A0A8B6; }
+
+/* Calendar view */
+.calendar-month { margin-bottom:16px; }
+.calendar-month h4 { font-size:13px; font-weight:700; margin-bottom:8px; color:var(--text-secondary); }
+.task-list-item { display:flex; align-items:center; gap:12px; padding:10px 14px; border:1px solid var(--border); border-radius:var(--radius); margin-bottom:6px; background:#fff; transition:var(--transition); }
+.task-list-item:hover { border-color:var(--primary); }
+.task-list-item.overdue { border-left:3px solid var(--danger); }
+.task-list-item.due-soon { border-left:3px solid var(--warning); }
+.task-date { font-family:var(--mono); font-size:11px; color:var(--text-muted); min-width:80px; }
+.task-info { flex:1; }
+.task-info strong { font-size:13px; }
+.task-info small { font-size:11px; color:var(--text-secondary); }
+
+/* Report preview */
+.report-preview { border:1px solid var(--border); border-radius:var(--radius-lg); padding:30px; background:#fff; max-width:800px; }
+.report-preview h1 { font-size:20px; margin-bottom:4px; }
+.report-preview h2 { font-size:16px; margin:20px 0 8px; border-bottom:1px solid var(--border); padding-bottom:4px; }
+.report-preview h3 { font-size:14px; margin:14px 0 6px; }
+.report-preview table { margin:10px 0; }
+.report-preview .rpt-meta { font-size:12px; color:var(--text-secondary); margin-bottom:20px; }
+
+/* Utility */
+.flex { display:flex; }
+.flex-between { display:flex; align-items:center; justify-content:space-between; }
+.gap-8 { gap:8px; }
+.gap-12 { gap:12px; }
+.mb-8 { margin-bottom:8px; }
+.mb-16 { margin-bottom:16px; }
+.text-sm { font-size:12px; }
+.text-xs { font-size:11px; }
+.text-muted { color:var(--text-muted); }
+.text-right { text-align:right; }
+.fw-600 { font-weight:600; }
+.truncate { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.clickable { cursor:pointer; }
+.clickable:hover { color:var(--primary); }
+.hidden { display:none !important; }
+
+/* Page transitions */
+.page { display:none; animation:fadeIn 0.2s ease; }
+.page.active { display:block; }
+@keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+
+/* Print/PDF */
+@media print { .sidebar, .topbar { display:none; } .content { padding:0; } }
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <h2><span>DORA</span> ICT TPRM</h2>
+      <p>Risk Management Suite</p>
+    </div>
+    <nav class="sidebar-nav" id="sidebar-nav">
+      <div class="nav-item active" data-page="dashboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        Dashboard
+      </div>
+      <div class="nav-item" data-page="providers">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        ICT Providers
+        <span class="nav-badge" id="nav-badge-providers"></span>
+      </div>
+      <div class="nav-item" data-page="controls">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4"/><path d="M12 2a10 10 0 100 20 10 10 0 000-20z"/></svg>
+        Controls & Evidence
+      </div>
+      <div class="nav-item" data-page="findings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        Findings
+        <span class="nav-badge" id="nav-badge-findings"></span>
+      </div>
+      <div class="nav-item" data-page="tasks">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Monitoring & Audit
+        <span class="nav-badge" id="nav-badge-tasks"></span>
+      </div>
+      <div class="nav-item" data-page="reports">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        Reports
+      </div>
+      <div class="nav-item" data-page="settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+        Settings
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <p>DORA ICT TPRM v1.0</p>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main">
+    <div class="topbar">
+      <div class="search-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="global-search" placeholder="Search providers, contracts, contacts…" />
+      </div>
+      <div class="topbar-actions">
+        <button class="btn btn-outline btn-sm" onclick="App.exportJSON()" title="Export backup"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Export</button>
+      </div>
+    </div>
+    <div class="content" id="content">
+      <div id="page-dashboard" class="page active"></div>
+      <div id="page-providers" class="page"></div>
+      <div id="page-controls" class="page"></div>
+      <div id="page-findings" class="page"></div>
+      <div id="page-tasks" class="page"></div>
+      <div id="page-reports" class="page"></div>
+      <div id="page-settings" class="page"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Container -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal" id="modal">
+    <div class="modal-header">
+      <h3 class="modal-title" id="modal-title"></h3>
+      <button class="modal-close" onclick="Modal.close()">&times;</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-footer" id="modal-footer"></div>
+  </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toast-container"></div>
+
+<script>
+/* ===== UTILITY HELPERS ===== */
+const Utils = {
+  uid() {
+    try { return crypto.randomUUID(); } catch(e) {
+      return 'xxxx-xxxx-xxxx'.replace(/x/g, ()=>(Math.random()*16|0).toString(16));
+    }
+  },
+  today() { return new Date().toISOString().split('T')[0]; },
+  formatDate(iso) {
+    if (!iso) return '—';
+    try { const d = new Date(iso); return d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}); } catch(e) { return iso; }
+  },
+  daysBetween(d1, d2) {
+    const a = new Date(d1), b = new Date(d2);
+    return Math.round((b - a) / (1000*60*60*24));
+  },
+  addMonths(iso, months) {
+    const d = new Date(iso);
+    d.setMonth(d.getMonth() + months);
+    return d.toISOString().split('T')[0];
+  },
+  addDays(iso, days) {
+    const d = new Date(iso);
+    d.setDate(d.getDate() + days);
+    return d.toISOString().split('T')[0];
+  },
+  escHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  },
+  debounce(fn, ms) {
+    let t; return (...a) => { clearTimeout(t); t = setTimeout(()=>fn(...a), ms); };
+  }
+};
+
+/* ===== TOAST ===== */
+const Toast = {
+  show(msg, type='success') {
+    const c = document.getElementById('toast-container');
+    const t = document.createElement('div');
+    t.className = `toast toast-${type}`;
+    t.innerHTML = `<span>${msg}</span>`;
+    c.appendChild(t);
+    setTimeout(()=>{ t.style.opacity='0'; t.style.transition='opacity 0.3s'; setTimeout(()=>t.remove(),300); }, 3000);
+  }
+};
+
+/* ===== MODAL ===== */
+const Modal = {
+  open(title, bodyHtml, footerHtml) {
+    document.getElementById('modal-title').textContent = title;
+    document.getElementById('modal-body').innerHTML = bodyHtml;
+    document.getElementById('modal-footer').innerHTML = footerHtml || '';
+    document.getElementById('modal-overlay').classList.add('open');
+  },
+  close() {
+    document.getElementById('modal-overlay').classList.remove('open');
+  }
+};
+document.getElementById('modal-overlay').addEventListener('click', e => {
+  if (e.target === e.currentTarget) Modal.close();
+});
+
+/* ===== DORA CONTROL DEFINITIONS ===== */
+const DORA_DOMAINS = {
+  A: { name: 'ICT Risk Management & Governance', items: [
+    'Documented ICT risk management framework approved by management body',
+    'Defined roles and responsibilities for ICT risk within senior management',
+    'ICT risk appetite statement aligned with business strategy',
+    'Regular ICT risk reporting to management body (at least annually)',
+    'Provider ICT risk included in enterprise risk register',
+    'ICT risk management policy reviewed and updated annually',
+    'Dedicated ICT risk function or officer identified',
+    'ICT risk training and awareness programme for staff',
+  ]},
+  B: { name: 'ICT Security & Policies', items: [
+    'Information security policy covering confidentiality, integrity, availability',
+    'Access management controls with least-privilege and role-based access',
+    'Multi-factor authentication for privileged and remote access',
+    'Encryption of data at rest and in transit to industry standards',
+    'Secure configuration baselines and hardening standards applied',
+    'Network segmentation and firewall rules documented and reviewed',
+    'Regular patching and vulnerability remediation process in place',
+    'Physical and environmental security controls for data centres',
+  ]},
+  C: { name: 'Incident Management & Reporting Readiness', items: [
+    'Documented ICT incident response process with defined classification',
+    'Incident notification timelines aligned to DORA regulatory requirements',
+    'Defined escalation paths for major ICT incidents',
+    'Root cause analysis and lessons learned process post-incident',
+    'ICT incident register maintained and accessible for audit',
+    'Communication plan for ICT incidents to regulators and clients',
+    'Annual incident response drill or tabletop exercise conducted',
+    'Integration of provider incident reporting into internal process',
+  ]},
+  D: { name: 'Business Continuity & Disaster Recovery', items: [
+    'Documented BCP and DR plans for critical ICT services',
+    'Recovery Time Objective (RTO) and Recovery Point Objective (RPO) defined',
+    'BCP/DR plans tested within the last 12 months',
+    'Backup strategy documented with regular verification of restores',
+    'Geographic redundancy for critical systems and data',
+    'Dependencies and interdependencies mapped for continuity planning',
+    'Crisis communication plan in place and tested',
+    'Lessons learned from DR tests documented and remediated',
+  ]},
+  E: { name: 'Testing & Assurance', items: [
+    'Annual penetration testing by independent party performed',
+    'Vulnerability scanning conducted at least quarterly',
+    'Threat-led penetration testing (TLPT) programme where applicable',
+    'Source code review or application security testing for key services',
+    'Third-party security certifications current (ISO 27001, SOC 2, etc.)',
+    'Testing results and remediation tracked to closure',
+    'Red team / blue team exercises conducted (if in scope)',
+    'Test evidence and reports available for supervisory review',
+  ]},
+  F: { name: 'Third-Party Oversight & Sub-outsourcing', items: [
+    'Register of all sub-contractors / sub-outsourcing arrangements maintained',
+    'Prior notification required for material sub-outsourcing changes',
+    'Due diligence performed on key sub-contractors',
+    'Right to audit sub-contractors included in contracts',
+    'Concentration risk assessment for sub-outsourcing chains',
+    'Monitoring of sub-contractor performance and risk posture',
+    'Contractual flow-down of security and compliance requirements',
+    'Exit strategy covers sub-outsourcing dependencies',
+  ]},
+  G: { name: 'Contractual & Exit Management', items: [
+    'Written contract covering all DORA Article 30 requirements',
+    'Defined SLAs with measurable performance indicators',
+    'Audit and access rights for the entity and regulators clearly stated',
+    'Data return and deletion obligations upon termination defined',
+    'Documented exit plan with transition timeline and milestones',
+    'Portability and substitutability assessment completed',
+    'Termination rights for material non-compliance or risk',
+    'Contract review cycle in place (at least annually for critical)',
+  ]},
+  H: { name: 'Data Protection, Logging & Monitoring', items: [
+    'Data classification scheme applied to all data processed',
+    'GDPR / data protection compliance measures documented',
+    'Security logging enabled for all critical systems and access events',
+    'Log retention policy meeting regulatory and contractual requirements',
+    'Real-time monitoring and alerting for security events',
+    'Regular review of logs and anomaly detection',
+    'Data breach notification procedures aligned with regulatory timelines',
+    'Privacy impact assessment completed for the service',
+  ]},
+};
+
+const DATA_CATEGORIES = ['Customer PII','Credentials','Payment data','Trading data','Financial records','IP','Logs/Telemetry','Other'];
+const DATA_CAT_SCORES = {'Customer PII':2,'Credentials':3,'Payment data':3,'Trading data':3,'Financial records':2,'IP':2,'Logs/Telemetry':1,'Other':1};
+const CLOUD_MODELS = ['SaaS','PaaS','IaaS','On-Prem','Hybrid'];
+const CLOUD_SCORES = {'SaaS':2,'PaaS':2,'IaaS':2,'On-Prem':1,'Hybrid':3};
+const ACCESS_LEVELS = ['None','Limited','Privileged'];
+const ACCESS_SCORES = {'None':0,'Limited':2,'Privileged':4};
+const CRITICALITY_LEVELS = ['Low','Medium','High'];
+const CRIT_SCORES = {'Low':1,'Medium':2,'High':3};
+const PROVIDER_STATUSES = ['Onboarding','Active','Under Review','Offboarding','Archived'];
+const FINDING_SEVERITIES = ['Low','Medium','High','Critical'];
+const FINDING_STATUSES = ['Open','In Progress','Closed'];
+const DORA_TAGS = ['Governance','ICT Security','Incident','BCP/DR','Testing','Contracting','Sub-outsourcing','Monitoring','Data Protection'];
+const TASK_TYPES = ['Periodic Performance & SLA Review','Security Posture Review','Annual DORA-aligned Due Diligence Refresh','Contract Review / Renewal Check','Sub-outsourcing review','BCP/DR evidence refresh','Incident readiness review','Audit / On-site / Remote assurance activity','Custom'];
+const TASK_FREQUENCIES = ['Monthly','Quarterly','Semi-Annual','Annual','Custom'];
+const FREQ_DAYS = {'Monthly':30,'Quarterly':90,'Semi-Annual':182,'Annual':365};
+
+/* ===== DATA STORE ===== */
+const STORAGE_KEY = 'dora_ict_tprm_app_v1';
+const SCHEMA_VERSION = 1;
+
+const Store = {
+  _data: null,
+  defaultData() {
+    return {
+      schemaVersion: SCHEMA_VERSION,
+      providers: [],
+      controlsByProvider: {},
+      findings: [],
+      tasks: [],
+      settings: {
+        scoring: { dataSensitivity: DATA_CAT_SCORES, access: ACCESS_SCORES, cloud: CLOUD_SCORES, criticality: CRIT_SCORES },
+        reviewCadence: { High:6, Medium:12, Low:24 },
+        ownersList: ['Risk Manager','CISO','Vendor Manager','IT Director','Compliance Officer','DPO'],
+        criticalityRules: { lowMax:6, medMax:12 }
+      }
+    };
+  },
+  load() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        this._data = JSON.parse(raw);
+        if (this._data.schemaVersion !== SCHEMA_VERSION) this.migrate();
+      } else {
+        this._data = this.defaultData();
+        this.seedSampleData();
+        this.save();
+      }
+    } catch(e) {
+      console.error('Storage corrupted, resetting:', e);
+      Toast.show('Data was corrupted and has been reset.','error');
+      this._data = this.defaultData();
+      this.seedSampleData();
+      this.save();
+    }
+  },
+  save() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(this._data)); } catch(e) { Toast.show('Failed to save data','error'); }
+  },
+  migrate() { /* stub for future migrations */ },
+  get data() { return this._data; },
+  get providers() { return this._data.providers; },
+  get findings() { return this._data.findings; },
+  get tasks() { return this._data.tasks; },
+  get settings() { return this._data.settings; },
+  get controls() { return this._data.controlsByProvider; },
+
+  getProvider(id) { return this._data.providers.find(p=>p.id===id); },
+  saveProvider(p) {
+    const idx = this._data.providers.findIndex(x=>x.id===p.id);
+    if (idx>=0) this._data.providers[idx]=p; else this._data.providers.push(p);
+    this.save();
+  },
+  deleteProvider(id) {
+    this._data.providers = this._data.providers.filter(p=>p.id!==id);
+    delete this._data.controlsByProvider[id];
+    this._data.findings = this._data.findings.filter(f=>f.providerId!==id);
+    this._data.tasks = this._data.tasks.filter(t=>t.providerId!==id);
+    this.save();
+  },
+
+  getFinding(id) { return this._data.findings.find(f=>f.id===id); },
+  saveFinding(f) {
+    const idx = this._data.findings.findIndex(x=>x.id===f.id);
+    if (idx>=0) this._data.findings[idx]=f; else this._data.findings.push(f);
+    this.save();
+  },
+  deleteFinding(id) { this._data.findings=this._data.findings.filter(f=>f.id!==id); this.save(); },
+
+  getTask(id) { return this._data.tasks.find(t=>t.id===id); },
+  saveTask(t) {
+    const idx = this._data.tasks.findIndex(x=>x.id===t.id);
+    if (idx>=0) this._data.tasks[idx]=t; else this._data.tasks.push(t);
+    this.save();
+  },
+  deleteTask(id) { this._data.tasks=this._data.tasks.filter(t=>t.id!==id); this.save(); },
+
+  initControlsForProvider(providerId) {
+    if (this._data.controlsByProvider[providerId]) return;
+    const ctrl = {};
+    for (const [key, domain] of Object.entries(DORA_DOMAINS)) {
+      ctrl[key] = {};
+      domain.items.forEach((item, i) => {
+        ctrl[key][`${key}-${i}`] = { status:'Not Started', evidence:[] };
+      });
+    }
+    this._data.controlsByProvider[providerId] = ctrl;
+    this.save();
+  },
+  getControls(providerId) {
+    this.initControlsForProvider(providerId);
+    return this._data.controlsByProvider[providerId];
+  },
+  setControlStatus(providerId, domainKey, itemKey, status) {
+    this.initControlsForProvider(providerId);
+    this._data.controlsByProvider[providerId][domainKey][itemKey].status = status;
+    this.save();
+  },
+  addEvidence(providerId, domainKey, itemKey, ev) {
+    this.initControlsForProvider(providerId);
+    this._data.controlsByProvider[providerId][domainKey][itemKey].evidence.push(ev);
+    this.save();
+  },
+
+  seedSampleData() {
+    const samples = [
+      { name:'CloudCore Infrastructure Ltd', legalName:'CloudCore Infrastructure Limited', contractId:'CC-2024-001', service:'Core cloud hosting and compute infrastructure (IaaS)', businessOwner:'IT Director', relationshipManager:'Vendor Manager', contactName:'Sarah Chen', contactEmail:'sarah.chen@cloudcore.io', contactPhone:'+44 20 7946 0123', country:'United Kingdom', dataLocations:'UK, Ireland, Germany', subOutsourcing:true, subList:'AWS (underlying IaaS), DataGuard (physical security)', cloudModel:'IaaS', accessLevel:'Privileged', dataCategories:['Customer PII','Financial records','Logs/Telemetry'], criticalFunction:true, criticality:'High', lastAssessment:'2025-03-15', status:'Active', notes:'Primary cloud infrastructure provider. DORA critical designation.' },
+      { name:'SecurePay Solutions AG', legalName:'SecurePay Solutions Aktiengesellschaft', contractId:'SP-2023-045', service:'Payment processing gateway and PCI-compliant transaction services', businessOwner:'CFO', relationshipManager:'Vendor Manager', contactName:'Hans Mueller', contactEmail:'h.mueller@securepay.de', contactPhone:'+49 30 12345678', country:'Germany', dataLocations:'Germany, Netherlands', subOutsourcing:false, subList:'', cloudModel:'SaaS', accessLevel:'Limited', dataCategories:['Customer PII','Payment data','Credentials','Financial records'], criticalFunction:true, criticality:'High', lastAssessment:'2025-01-20', status:'Active', notes:'PCI DSS Level 1 certified. Handles all card-not-present transactions.' },
+      { name:'AnalytixAI Inc.', legalName:'AnalytixAI Incorporated', contractId:'AA-2024-012', service:'Data analytics and ML model hosting platform', businessOwner:'Chief Data Officer', relationshipManager:'Risk Manager', contactName:'Priya Patel', contactEmail:'ppatel@analytixai.com', contactPhone:'+1 415 555 0198', country:'United States', dataLocations:'US (Virginia, Oregon)', subOutsourcing:true, subList:'Google Cloud (underlying PaaS)', cloudModel:'PaaS', accessLevel:'Limited', dataCategories:['Customer PII','Trading data','IP'], criticalFunction:false, criticality:'Medium', lastAssessment:'2024-11-10', status:'Active', notes:'Used for non-real-time analytics. Data pseudonymised before transfer.' },
+      { name:'ComplianceDoc GmbH', legalName:'ComplianceDoc GmbH', contractId:'CD-2024-008', service:'Regulatory document management and archival', businessOwner:'Compliance Officer', relationshipManager:'Compliance Officer', contactName:'Lisa Schmidt', contactEmail:'l.schmidt@compliancedoc.eu', contactPhone:'+49 89 9876543', country:'Germany', dataLocations:'Germany', subOutsourcing:false, subList:'', cloudModel:'SaaS', accessLevel:'Limited', dataCategories:['Financial records','Logs/Telemetry'], criticalFunction:false, criticality:'Low', lastAssessment:'2024-06-01', status:'Active', notes:'Low-risk document archival. Annual review sufficient.' },
+      { name:'NetGuard Security Ltd', legalName:'NetGuard Security Limited', contractId:'NG-2025-003', service:'Managed SOC, SIEM and threat monitoring services', businessOwner:'CISO', relationshipManager:'CISO', contactName:'James Wright', contactEmail:'j.wright@netguard.co.uk', contactPhone:'+44 20 7946 0456', country:'United Kingdom', dataLocations:'UK', subOutsourcing:false, subList:'', cloudModel:'Hybrid', accessLevel:'Privileged', dataCategories:['Credentials','Logs/Telemetry','IP'], criticalFunction:true, criticality:'High', lastAssessment:'2025-06-01', status:'Onboarding', notes:'New managed SOC provider. Onboarding due diligence in progress.' },
+    ];
+    samples.forEach(s => {
+      const id = Utils.uid();
+      const p = { id, ...s, createdAt: new Date().toISOString() };
+      this._data.providers.push(p);
+      this.initControlsForProvider(id);
+      // Set some sample control statuses
+      const ctrl = this._data.controlsByProvider[id];
+      const domains = Object.keys(ctrl);
+      domains.forEach(dk => {
+        const items = Object.keys(ctrl[dk]);
+        items.forEach((ik, idx) => {
+          if (s.criticality === 'High') {
+            ctrl[dk][ik].status = idx < 5 ? 'Pass' : (idx < 6 ? 'In Progress' : 'Not Started');
+          } else if (s.criticality === 'Medium') {
+            ctrl[dk][ik].status = idx < 4 ? 'Pass' : (idx < 5 ? 'In Progress' : 'Not Started');
+          } else {
+            ctrl[dk][ik].status = idx < 3 ? 'Pass' : 'Not Started';
+          }
+        });
+      });
+    });
+
+    // Sample findings
+    const p0 = this._data.providers[0].id;
+    const p1 = this._data.providers[1].id;
+    const p4 = this._data.providers[4].id;
+    this._data.findings.push(
+      { id:Utils.uid(), providerId:p0, title:'BCP/DR test overdue by 3 months', doraTag:'BCP/DR', severity:'High', description:'Last BCP test was conducted 15 months ago, exceeding the 12-month requirement.', recommendation:'Schedule and complete BCP/DR test within 30 days.', owner:'Risk Manager', dueDate:'2026-03-15', status:'Open', closureNotes:'', closedDate:'' },
+      { id:Utils.uid(), providerId:p1, title:'MFA not enforced for admin portal', doraTag:'ICT Security', severity:'Critical', description:'Multi-factor authentication is not mandatory for administrative access to the payment gateway management console.', recommendation:'Enforce MFA for all admin and privileged access immediately.', owner:'CISO', dueDate:'2026-02-28', status:'In Progress', closureNotes:'', closedDate:'' },
+      { id:Utils.uid(), providerId:p0, title:'Sub-outsourcing register incomplete', doraTag:'Sub-outsourcing', severity:'Medium', description:'The register of sub-contractors does not include all 4th parties.', recommendation:'Request updated and complete sub-outsourcing register.', owner:'Vendor Manager', dueDate:'2026-04-01', status:'Open', closureNotes:'', closedDate:'' },
+      { id:Utils.uid(), providerId:p4, title:'Onboarding due diligence pending completion', doraTag:'Governance', severity:'Medium', description:'Initial due diligence assessment not yet completed for new provider.', recommendation:'Complete full DORA-aligned assessment before go-live.', owner:'Risk Manager', dueDate:'2026-03-01', status:'Open', closureNotes:'', closedDate:'' },
+    );
+
+    // Sample tasks
+    const now = Utils.today();
+    this._data.tasks.push(
+      { id:Utils.uid(), providerId:p0, type:'Annual DORA-aligned Due Diligence Refresh', name:'Annual Due Diligence – CloudCore', frequency:'Annual', startDate:'2025-03-15', nextDue:Utils.addMonths('2025-03-15',12), owner:'Risk Manager', priority:'High', status:'Pending', notes:'Full DORA assessment refresh required.', evidenceChecklist:[{text:'Updated security questionnaire',done:false},{text:'SOC 2 Type II report',done:false},{text:'Pen test results',done:false}], completedDate:'' },
+      { id:Utils.uid(), providerId:p1, type:'Periodic Performance & SLA Review', name:'Q1 SLA Review – SecurePay', frequency:'Quarterly', startDate:'2025-01-01', nextDue:'2026-03-01', owner:'Vendor Manager', priority:'Medium', status:'Pending', notes:'', evidenceChecklist:[{text:'SLA performance report',done:false},{text:'Incident summary',done:false}], completedDate:'' },
+      { id:Utils.uid(), providerId:p0, type:'BCP/DR evidence refresh', name:'BCP/DR Evidence – CloudCore', frequency:'Annual', startDate:'2025-01-01', nextDue:'2026-01-01', owner:'Risk Manager', priority:'High', status:'Overdue', notes:'Linked to finding on BCP test overdue.', evidenceChecklist:[{text:'DR test report',done:false},{text:'Recovery metrics',done:false}], completedDate:'' },
+      { id:Utils.uid(), providerId:p4, type:'Security Posture Review', name:'Initial Security Assessment – NetGuard', frequency:'Semi-Annual', startDate:'2025-06-01', nextDue:'2025-12-01', owner:'CISO', priority:'High', status:'Overdue', notes:'Pending onboarding completion.', evidenceChecklist:[{text:'Pen test report',done:false},{text:'ISO 27001 cert',done:false},{text:'Vulnerability scan results',done:false}], completedDate:'' },
+    );
+    this.save();
+  },
+
+  exportJSON() {
+    return JSON.stringify(this._data, null, 2);
+  },
+  importJSON(jsonStr) {
+    try {
+      const d = JSON.parse(jsonStr);
+      if (!d.schemaVersion) throw new Error('Invalid schema');
+      this._data = d;
+      this.save();
+      return true;
+    } catch(e) {
+      Toast.show('Import failed: ' + e.message, 'error');
+      return false;
+    }
+  },
+  reset() {
+    this._data = this.defaultData();
+    this.seedSampleData();
+    this.save();
+  }
+};
+
+/* ===== SCORING ENGINE ===== */
+const Scoring = {
+  inherentScore(p) {
+    let score = 0;
+    (p.dataCategories||[]).forEach(c => { score += (DATA_CAT_SCORES[c]||0); });
+    score += ACCESS_SCORES[p.accessLevel] || 0;
+    score += CLOUD_SCORES[p.cloudModel] || 0;
+    score += p.subOutsourcing ? 2 : 0;
+    score += p.criticalFunction ? 3 : 0;
+    score += CRIT_SCORES[p.criticality] || 0;
+    return score;
+  },
+  inherentTier(score) {
+    const s = Store.settings;
+    if (score <= (s.criticalityRules?.lowMax || 6)) return 'Low';
+    if (score <= (s.criticalityRules?.medMax || 12)) return 'Medium';
+    return 'High';
+  },
+  maturity(providerId) {
+    const ctrls = Store.getControls(providerId);
+    let total=0, passed=0;
+    for (const dk of Object.keys(ctrls)) {
+      for (const ik of Object.keys(ctrls[dk])) {
+        total++;
+        const st = ctrls[dk][ik].status;
+        if (st==='Pass' || st==='N/A') passed++;
+      }
+    }
+    return total > 0 ? Math.round((passed/total)*100) : 0;
+  },
+  domainMaturity(providerId) {
+    const ctrls = Store.getControls(providerId);
+    const result = {};
+    for (const dk of Object.keys(ctrls)) {
+      let total=0, passed=0;
+      for (const ik of Object.keys(ctrls[dk])) {
+        total++;
+        const st = ctrls[dk][ik].status;
+        if (st==='Pass' || st==='N/A') passed++;
+      }
+      result[dk] = total > 0 ? Math.round((passed/total)*100) : 0;
+    }
+    return result;
+  },
+  residualTier(p) {
+    const iScore = this.inherentScore(p);
+    let tier = this.inherentTier(iScore);
+    const mat = this.maturity(p.id);
+    const openFindings = Store.findings.filter(f => f.providerId===p.id && f.status!=='Closed');
+    const hasCritical = openFindings.some(f => f.severity === 'Critical');
+    const hasHighCritical = openFindings.some(f => f.severity==='High' || f.severity==='Critical');
+    const overdueTasks = Store.tasks.filter(t => t.providerId===p.id && t.status==='Overdue');
+    const recentOverdue = overdueTasks.filter(t => {
+      const days = Utils.daysBetween(t.nextDue, Utils.today());
+      return days <= 90;
+    });
+
+    if (hasCritical || mat < 60) {
+      tier = 'High';
+    } else if (mat >= 85 && !hasHighCritical && recentOverdue.length === 0) {
+      if (tier === 'High') tier = 'Medium';
+      else if (tier === 'Medium') tier = 'Low';
+    }
+    return tier;
+  },
+  nextReviewDate(p) {
+    const rTier = this.residualTier(p);
+    const cadence = Store.settings.reviewCadence;
+    let months = cadence[rTier] || 12;
+    if (p.criticalFunction && months > 12) months = 12;
+    const base = p.lastAssessment || Utils.today();
+    return Utils.addMonths(base, months);
+  }
+};
+
+/* ===== APP CONTROLLER ===== */
+const App = {
+  currentPage: 'dashboard',
+  currentProviderId: null,
+  providerDetailTab: 'profile',
+  charts: {},
+
+  init() {
+    Store.load();
+    this.bindNav();
+    this.bindSearch();
+    this.navigate('dashboard');
+    this.updateBadges();
+  },
+
+  bindNav() {
+    document.getElementById('sidebar-nav').addEventListener('click', e => {
+      const item = e.target.closest('.nav-item');
+      if (!item) return;
+      const page = item.dataset.page;
+      this.navigate(page);
+    });
+  },
+
+  bindSearch() {
+    document.getElementById('global-search').addEventListener('input', Utils.debounce(e => {
+      const q = e.target.value.trim().toLowerCase();
+      if (q.length > 0) {
+        this.navigate('providers');
+        this.renderProviders(q);
+      }
+    }, 300));
+  },
+
+  navigate(page, detail) {
+    this.currentPage = page;
+    if (page !== 'providers') this.currentProviderId = null;
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById(`page-${page}`).classList.add('active');
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.page === page));
+
+    switch(page) {
+      case 'dashboard': this.renderDashboard(); break;
+      case 'providers': if (detail) { this.currentProviderId=detail; this.renderProviderDetail(detail); } else this.renderProviders(); break;
+      case 'controls': this.renderControlsPage(); break;
+      case 'findings': this.renderFindings(); break;
+      case 'tasks': this.renderTasks(); break;
+      case 'reports': this.renderReports(); break;
+      case 'settings': this.renderSettings(); break;
+    }
+    this.updateBadges();
+  },
+
+  updateBadges() {
+    const activeProviders = Store.providers.filter(p=>p.status!=='Archived').length;
+    const el1 = document.getElementById('nav-badge-providers');
+    el1.textContent = activeProviders || '';
+    el1.style.display = activeProviders ? '' : 'none';
+
+    const openFindings = Store.findings.filter(f=>f.status!=='Closed').length;
+    const el2 = document.getElementById('nav-badge-findings');
+    el2.textContent = openFindings || '';
+    el2.style.display = openFindings ? '' : 'none';
+
+    const overdueTasks = Store.tasks.filter(t=>t.status==='Overdue' || (t.status==='Pending' && t.nextDue < Utils.today())).length;
+    const el3 = document.getElementById('nav-badge-tasks');
+    el3.textContent = overdueTasks || '';
+    el3.style.display = overdueTasks ? '' : 'none';
+  },
+
+  exportJSON() {
+    const blob = new Blob([Store.exportJSON()], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `dora-tprm-backup-${Utils.today()}.json`; a.click();
+    URL.revokeObjectURL(url);
+    Toast.show('Backup exported successfully');
+  },
+
+  /* ===== DASHBOARD ===== */
+  renderDashboard() {
+    const el = document.getElementById('page-dashboard');
+    const ps = Store.providers.filter(p=>p.status!=='Archived');
+    const findings = Store.findings;
+    const tasks = Store.tasks;
+    const openFindings = findings.filter(f=>f.status!=='Closed');
+    const critFindings = openFindings.filter(f=>f.severity==='Critical');
+    const highFindings = openFindings.filter(f=>f.severity==='High');
+    const overdueTasks = tasks.filter(t=>t.status==='Overdue' || (t.status==='Pending' && t.nextDue < Utils.today()));
+    const critFuncCount = ps.filter(p=>p.criticalFunction).length;
+    const highRisk = ps.filter(p=>Scoring.residualTier(p)==='High').length;
+
+    // Compute attention table
+    const attention = ps.map(p => ({
+      p,
+      residual: Scoring.residualTier(p),
+      maturity: Scoring.maturity(p.id),
+      openHighCrit: openFindings.filter(f=>f.providerId===p.id && (f.severity==='High'||f.severity==='Critical')).length,
+      overdue: overdueTasks.filter(t=>t.providerId===p.id).length,
+    })).sort((a,b) => {
+      const riskOrder = {High:3,Medium:2,Low:1};
+      return (riskOrder[b.residual]-riskOrder[a.residual]) || (b.openHighCrit-a.openHighCrit) || (a.maturity-b.maturity);
+    }).slice(0,5);
+
+    el.innerHTML = `
+      <h2 style="font-size:22px;font-weight:700;letter-spacing:-0.5px;margin-bottom:6px;">Dashboard</h2>
+      <p class="text-sm text-muted mb-16">DORA ICT Third-Party Risk Management Overview</p>
+
+      <div class="kpi-grid">
+        <div class="kpi-card kpi-accent"><div class="kpi-label">Active Providers</div><div class="kpi-value">${ps.length}</div><div class="kpi-sub">${critFuncCount} supporting critical/important functions</div></div>
+        <div class="kpi-card kpi-danger"><div class="kpi-label">High Residual Risk</div><div class="kpi-value">${highRisk}</div><div class="kpi-sub">providers requiring enhanced oversight</div></div>
+        <div class="kpi-card kpi-warning"><div class="kpi-label">Open Findings</div><div class="kpi-value">${openFindings.length}</div><div class="kpi-sub">${critFindings.length} critical, ${highFindings.length} high</div></div>
+        <div class="kpi-card kpi-success"><div class="kpi-label">Overdue Tasks</div><div class="kpi-value">${overdueTasks.length}</div><div class="kpi-sub">monitoring & audit activities</div></div>
+      </div>
+
+      <div class="chart-grid mb-16">
+        <div class="chart-card"><h3>Providers by Criticality</h3><div class="chart-container"><canvas id="chart-criticality"></canvas></div></div>
+        <div class="chart-card"><h3>Inherent vs Residual Risk</h3><div class="chart-container"><canvas id="chart-risk"></canvas></div></div>
+        <div class="chart-card"><h3>Open Findings by Severity</h3><div class="chart-container"><canvas id="chart-findings"></canvas></div></div>
+        <div class="chart-card"><h3>Tasks: On-time vs Overdue</h3><div class="chart-container"><canvas id="chart-tasks"></canvas></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><h3 class="card-title">Top Oversight Attention</h3></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Provider</th><th>Residual Risk</th><th>Maturity</th><th>High/Crit Findings</th><th>Overdue Tasks</th><th>Critical Func.</th></tr></thead>
+            <tbody>
+              ${attention.map(a=>`<tr class="clickable" onclick="App.navigate('providers','${a.p.id}')">
+                <td><strong>${Utils.escHtml(a.p.name)}</strong></td>
+                <td><span class="badge badge-${a.residual.toLowerCase()}">${a.residual}</span></td>
+                <td><div style="display:flex;align-items:center;gap:8px;"><div class="progress-bar" style="width:80px"><div class="progress-fill ${a.maturity>=85?'green':a.maturity>=60?'yellow':'red'}" style="width:${a.maturity}%"></div></div><span class="text-xs">${a.maturity}%</span></div></td>
+                <td>${a.openHighCrit > 0 ? `<span class="badge badge-danger">${a.openHighCrit}</span>` : '<span class="text-muted">0</span>'}</td>
+                <td>${a.overdue > 0 ? `<span class="badge badge-warning">${a.overdue}</span>` : '<span class="text-muted">0</span>'}</td>
+                <td>${a.p.criticalFunction ? '<span class="badge badge-info">Yes</span>' : '—'}</td>
+              </tr>`).join('')}
+              ${attention.length===0 ? '<tr><td colspan="6" class="text-muted" style="text-align:center;padding:20px;">No providers yet</td></tr>' : ''}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+    this.renderDashboardCharts(ps, openFindings, tasks, overdueTasks);
+  },
+
+  renderDashboardCharts(ps, openFindings, tasks, overdueTasks) {
+    // Destroy old charts
+    Object.values(this.charts).forEach(c=>c.destroy());
+    this.charts = {};
+
+    const chartOpts = { responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom',labels:{font:{size:11,family:'IBM Plex Sans'},padding:12}}} };
+
+    // Criticality
+    const critCounts = {Low:0,Medium:0,High:0};
+    ps.forEach(p=>critCounts[p.criticality]=(critCounts[p.criticality]||0)+1);
+    this.charts.crit = new Chart(document.getElementById('chart-criticality'), {
+      type:'doughnut', data:{labels:['Low','Medium','High'],datasets:[{data:[critCounts.Low,critCounts.Medium,critCounts.High],backgroundColor:['#0EA574','#E8A317','#DC3545'],borderWidth:0}]}, options:{...chartOpts,cutout:'65%'}
+    });
+
+    // Risk comparison
+    const iRisk={Low:0,Medium:0,High:0}, rRisk={Low:0,Medium:0,High:0};
+    ps.forEach(p=>{
+      const it=Scoring.inherentTier(Scoring.inherentScore(p)); iRisk[it]++;
+      const rt=Scoring.residualTier(p); rRisk[rt]++;
+    });
+    this.charts.risk = new Chart(document.getElementById('chart-risk'), {
+      type:'bar', data:{labels:['Low','Medium','High'],datasets:[
+        {label:'Inherent',data:[iRisk.Low,iRisk.Medium,iRisk.High],backgroundColor:'rgba(27,110,243,0.7)',borderRadius:4},
+        {label:'Residual',data:[rRisk.Low,rRisk.Medium,rRisk.High],backgroundColor:'rgba(220,53,69,0.7)',borderRadius:4}
+      ]}, options:{...chartOpts,scales:{y:{beginAtZero:true,ticks:{stepSize:1}}}}
+    });
+
+    // Findings
+    const fCounts = {Low:0,Medium:0,High:0,Critical:0};
+    openFindings.forEach(f=>fCounts[f.severity]=(fCounts[f.severity]||0)+1);
+    this.charts.findings = new Chart(document.getElementById('chart-findings'), {
+      type:'bar', data:{labels:['Low','Medium','High','Critical'],datasets:[{data:[fCounts.Low,fCounts.Medium,fCounts.High,fCounts.Critical],backgroundColor:['#0EA574','#E8A317','#DC3545','#8B0000'],borderRadius:4}]}, options:{...chartOpts,plugins:{...chartOpts.plugins,legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1}}}}
+    });
+
+    // Tasks
+    const onTime = tasks.filter(t=>t.status==='Completed'|| (t.status==='Pending' && t.nextDue >= Utils.today())).length;
+    const overdue = overdueTasks.length;
+    const pending = tasks.filter(t=>t.status==='Pending' && t.nextDue >= Utils.today()).length;
+    this.charts.tasks = new Chart(document.getElementById('chart-tasks'), {
+      type:'doughnut', data:{labels:['On Track','Overdue','Completed'],datasets:[{data:[pending,overdue,tasks.filter(t=>t.status==='Completed').length],backgroundColor:['#1B6EF3','#DC3545','#0EA574'],borderWidth:0}]}, options:{...chartOpts,cutout:'65%'}
+    });
+  },
+
+  /* ===== PROVIDERS LIST ===== */
+  renderProviders(searchQuery) {
+    if (this.currentProviderId) { this.renderProviderDetail(this.currentProviderId); return; }
+    const el = document.getElementById('page-providers');
+    let ps = Store.providers;
+    const q = searchQuery || '';
+    if (q) ps = ps.filter(p =>
+      (p.name||'').toLowerCase().includes(q) ||
+      (p.contractId||'').toLowerCase().includes(q) ||
+      (p.contactName||'').toLowerCase().includes(q) ||
+      (p.contactEmail||'').toLowerCase().includes(q) ||
+      (p.service||'').toLowerCase().includes(q)
+    );
+
+    el.innerHTML = `
+      <div class="flex-between mb-16">
+        <div><h2 style="font-size:22px;font-weight:700;letter-spacing:-0.5px;">ICT Provider Inventory</h2>
+        <p class="text-sm text-muted">Manage your third-party ICT service providers</p></div>
+        <button class="btn btn-primary" onclick="App.openProviderModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add Provider</button>
+      </div>
+      <div class="filter-bar">
+        <select id="filter-status" onchange="App.renderProviders()"><option value="">All Statuses</option>${PROVIDER_STATUSES.map(s=>`<option>${s}</option>`).join('')}</select>
+        <select id="filter-crit" onchange="App.renderProviders()"><option value="">All Criticality</option>${CRITICALITY_LEVELS.map(s=>`<option>${s}</option>`).join('')}</select>
+        <select id="filter-risk" onchange="App.renderProviders()"><option value="">All Risk Tiers</option><option>Low</option><option>Medium</option><option>High</option></select>
+        <select id="filter-cf" onchange="App.renderProviders()"><option value="">Critical Function</option><option value="true">Yes</option><option value="false">No</option></select>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden;">
+        <div class="table-wrap">
+          <table id="providers-table">
+            <thead><tr>
+              <th class="sortable" data-sort="name">Provider</th>
+              <th>Status</th>
+              <th>Criticality</th>
+              <th class="sortable" data-sort="residual">Residual Risk</th>
+              <th>Maturity</th>
+              <th>Critical Func.</th>
+              <th class="sortable" data-sort="nextReview">Next Review</th>
+              <th>Actions</th>
+            </tr></thead>
+            <tbody id="providers-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    `;
+    this.filterAndRenderProviderRows(ps);
+  },
+
+  filterAndRenderProviderRows(ps) {
+    const sf = document.getElementById('filter-status');
+    const cf = document.getElementById('filter-crit');
+    const rf = document.getElementById('filter-risk');
+    const cff = document.getElementById('filter-cf');
+    let filtered = ps || Store.providers;
+    if (sf && sf.value) filtered = filtered.filter(p=>p.status===sf.value);
+    if (cf && cf.value) filtered = filtered.filter(p=>p.criticality===cf.value);
+    if (rf && rf.value) filtered = filtered.filter(p=>Scoring.residualTier(p)===rf.value);
+    if (cff && cff.value) filtered = filtered.filter(p=>String(p.criticalFunction)===cff.value);
+
+    const tbody = document.getElementById('providers-tbody');
+    if (!tbody) return;
+    if (filtered.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state"><h3>No providers found</h3><p>Add your first ICT provider to get started.</p></div></td></tr>';
+      return;
+    }
+    tbody.innerHTML = filtered.map(p => {
+      const rt = Scoring.residualTier(p);
+      const mat = Scoring.maturity(p.id);
+      const nr = Scoring.nextReviewDate(p);
+      const overdue = nr < Utils.today();
+      return `<tr>
+        <td><strong class="clickable" onclick="App.navigate('providers','${p.id}')">${Utils.escHtml(p.name)}</strong><br><span class="text-xs text-muted">${Utils.escHtml(p.contractId||'')}</span></td>
+        <td><span class="badge badge-${p.status==='Active'?'success':p.status==='Archived'?'neutral':p.status==='Offboarding'?'warning':'primary'}">${p.status}</span></td>
+        <td><span class="badge badge-${p.criticality.toLowerCase()}">${p.criticality}</span></td>
+        <td><span class="badge badge-${rt.toLowerCase()}">${rt}</span></td>
+        <td><div style="display:flex;align-items:center;gap:6px;"><div class="progress-bar" style="width:60px"><div class="progress-fill ${mat>=85?'green':mat>=60?'yellow':'red'}" style="width:${mat}%"></div></div><span class="text-xs">${mat}%</span></div></td>
+        <td>${p.criticalFunction ? '<span class="badge badge-info">CIF</span>' : '—'}</td>
+        <td><span class="text-xs ${overdue?'badge badge-danger':''}">${Utils.formatDate(nr)}</span></td>
+        <td><div class="btn-group">
+          <button class="btn-icon" title="Edit" onclick="App.openProviderModal('${p.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+          <button class="btn-icon" title="Delete" onclick="App.confirmDeleteProvider('${p.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button>
+        </div></td>
+      </tr>`;
+    }).join('');
+  },
+
+  openProviderModal(id) {
+    const p = id ? Store.getProvider(id) : null;
+    const title = p ? 'Edit Provider' : 'Add ICT Provider';
+    const dc = p ? (p.dataCategories||[]) : [];
+    const body = `
+      <form id="provider-form" onsubmit="return false;">
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Provider Name <span class="required">*</span></label><input class="form-control" id="pf-name" value="${Utils.escHtml(p?.name||'')}" required></div>
+          <div class="form-group"><label class="form-label">Legal Entity / Registered Name</label><input class="form-control" id="pf-legalName" value="${Utils.escHtml(p?.legalName||'')}"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Contract / Agreement ID</label><input class="form-control" id="pf-contractId" value="${Utils.escHtml(p?.contractId||'')}"></div>
+          <div class="form-group"><label class="form-label">Status</label><select class="form-control" id="pf-status">${PROVIDER_STATUSES.map(s=>`<option ${p?.status===s?'selected':''}>${s}</option>`).join('')}</select></div>
+        </div>
+        <div class="form-group"><label class="form-label">Service Description</label><textarea class="form-control" id="pf-service">${Utils.escHtml(p?.service||'')}</textarea></div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Business Owner</label><select class="form-control" id="pf-businessOwner"><option value="">Select...</option>${Store.settings.ownersList.map(o=>`<option ${p?.businessOwner===o?'selected':''}>${o}</option>`).join('')}</select></div>
+          <div class="form-group"><label class="form-label">Relationship Manager</label><select class="form-control" id="pf-relationshipManager"><option value="">Select...</option>${Store.settings.ownersList.map(o=>`<option ${p?.relationshipManager===o?'selected':''}>${o}</option>`).join('')}</select></div>
+        </div>
+        <div class="form-row-3">
+          <div class="form-group"><label class="form-label">Contact Name</label><input class="form-control" id="pf-contactName" value="${Utils.escHtml(p?.contactName||'')}"></div>
+          <div class="form-group"><label class="form-label">Contact Email</label><input class="form-control" id="pf-contactEmail" type="email" value="${Utils.escHtml(p?.contactEmail||'')}"></div>
+          <div class="form-group"><label class="form-label">Contact Phone</label><input class="form-control" id="pf-contactPhone" value="${Utils.escHtml(p?.contactPhone||'')}"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Country of Establishment</label><input class="form-control" id="pf-country" value="${Utils.escHtml(p?.country||'')}"></div>
+          <div class="form-group"><label class="form-label">Data / Processing Locations</label><input class="form-control" id="pf-dataLocations" value="${Utils.escHtml(p?.dataLocations||'')}"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Cloud Model</label><select class="form-control" id="pf-cloudModel">${CLOUD_MODELS.map(c=>`<option ${p?.cloudModel===c?'selected':''}>${c}</option>`).join('')}</select></div>
+          <div class="form-group"><label class="form-label">Access Level</label><select class="form-control" id="pf-accessLevel">${ACCESS_LEVELS.map(a=>`<option ${p?.accessLevel===a?'selected':''}>${a}</option>`).join('')}</select></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Criticality</label><select class="form-control" id="pf-criticality">${CRITICALITY_LEVELS.map(c=>`<option ${p?.criticality===c?'selected':''}>${c}</option>`).join('')}</select></div>
+          <div class="form-group"><label class="form-label">Supports Critical / Important Function?</label><select class="form-control" id="pf-criticalFunction"><option value="false" ${!p?.criticalFunction?'selected':''}>No</option><option value="true" ${p?.criticalFunction?'selected':''}>Yes</option></select></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Data Categories Processed</label>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;" id="pf-dataCats">
+            ${DATA_CATEGORIES.map(c=>`<label class="form-check"><input type="checkbox" value="${c}" ${dc.includes(c)?'checked':''}> ${c}</label>`).join('')}
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Sub-outsourcing?</label><select class="form-control" id="pf-subOutsourcing" onchange="document.getElementById('pf-subList-wrap').style.display=this.value==='true'?'':'none'"><option value="false" ${!p?.subOutsourcing?'selected':''}>No</option><option value="true" ${p?.subOutsourcing?'selected':''}>Yes</option></select></div>
+          <div class="form-group" id="pf-subList-wrap" style="display:${p?.subOutsourcing?'':'none'}"><label class="form-label">Sub-contractor List</label><input class="form-control" id="pf-subList" value="${Utils.escHtml(p?.subList||'')}"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Last Assessment Date</label><input class="form-control" id="pf-lastAssessment" type="date" value="${p?.lastAssessment||''}"></div>
+          <div class="form-group"><label class="form-label">Inherent ICT Risk Score</label><input class="form-control" id="pf-riskPreview" readonly disabled></div>
+        </div>
+        <div class="form-group"><label class="form-label">Notes</label><textarea class="form-control" id="pf-notes">${Utils.escHtml(p?.notes||'')}</textarea></div>
+      </form>
+    `;
+    const footer = `<button class="btn btn-outline" onclick="Modal.close()">Cancel</button><button class="btn btn-primary" onclick="App.saveProvider('${id||''}')">Save Provider</button>`;
+    Modal.open(title, body, footer);
+    // Live risk preview
+    const updatePreview = () => {
+      const cats = [...document.querySelectorAll('#pf-dataCats input:checked')].map(i=>i.value);
+      const score = Scoring.inherentScore({
+        dataCategories:cats,
+        accessLevel:document.getElementById('pf-accessLevel').value,
+        cloudModel:document.getElementById('pf-cloudModel').value,
+        subOutsourcing:document.getElementById('pf-subOutsourcing').value==='true',
+        criticalFunction:document.getElementById('pf-criticalFunction').value==='true',
+        criticality:document.getElementById('pf-criticality').value,
+      });
+      document.getElementById('pf-riskPreview').value = `${score} — ${Scoring.inherentTier(score)}`;
+    };
+    document.getElementById('modal-body').addEventListener('change', updatePreview);
+    updatePreview();
+  },
+
+  saveProvider(id) {
+    const name = document.getElementById('pf-name').value.trim();
+    if (!name) { Toast.show('Provider name is required','error'); return; }
+    const email = document.getElementById('pf-contactEmail').value;
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { Toast.show('Invalid email format','error'); return; }
+
+    const cats = [...document.querySelectorAll('#pf-dataCats input:checked')].map(i=>i.value);
+    const p = {
+      id: id || Utils.uid(),
+      name,
+      legalName: document.getElementById('pf-legalName').value.trim(),
+      contractId: document.getElementById('pf-contractId').value.trim(),
+      service: document.getElementById('pf-service').value.trim(),
+      businessOwner: document.getElementById('pf-businessOwner').value,
+      relationshipManager: document.getElementById('pf-relationshipManager').value,
+      contactName: document.getElementById('pf-contactName').value.trim(),
+      contactEmail: email,
+      contactPhone: document.getElementById('pf-contactPhone').value.trim(),
+      country: document.getElementById('pf-country').value.trim(),
+      dataLocations: document.getElementById('pf-dataLocations').value.trim(),
+      cloudModel: document.getElementById('pf-cloudModel').value,
+      accessLevel: document.getElementById('pf-accessLevel').value,
+      dataCategories: cats,
+      criticalFunction: document.getElementById('pf-criticalFunction').value === 'true',
+      criticality: document.getElementById('pf-criticality').value,
+      subOutsourcing: document.getElementById('pf-subOutsourcing').value === 'true',
+      subList: document.getElementById('pf-subList')?.value?.trim() || '',
+      lastAssessment: document.getElementById('pf-lastAssessment').value,
+      status: document.getElementById('pf-status').value,
+      notes: document.getElementById('pf-notes').value.trim(),
+      createdAt: id ? Store.getProvider(id)?.createdAt : new Date().toISOString(),
+    };
+    Store.saveProvider(p);
+    Modal.close();
+    Toast.show(id ? 'Provider updated' : 'Provider added');
+    this.navigate('providers');
+  },
+
+  confirmDeleteProvider(id) {
+    const p = Store.getProvider(id);
+    Modal.open('Delete Provider',
+      `<p>Are you sure you want to delete <strong>${Utils.escHtml(p.name)}</strong>? This will also remove all associated controls, findings, and tasks.</p>`,
+      `<button class="btn btn-outline" onclick="Modal.close()">Cancel</button><button class="btn btn-danger" onclick="App.doDeleteProvider('${id}')">Delete</button>`
+    );
+  },
+  doDeleteProvider(id) {
+    Store.deleteProvider(id);
+    Modal.close();
+    Toast.show('Provider deleted');
+    this.navigate('providers');
+  },
+
+  /* ===== PROVIDER DETAIL ===== */
+  renderProviderDetail(id) {
+    const p = Store.getProvider(id);
+    if (!p) { this.renderProviders(); return; }
+    const el = document.getElementById('page-providers');
+    const iScore = Scoring.inherentScore(p);
+    const iTier = Scoring.inherentTier(iScore);
+    const rTier = Scoring.residualTier(p);
+    const mat = Scoring.maturity(p.id);
+    const nr = Scoring.nextReviewDate(p);
+    const pFindings = Store.findings.filter(f=>f.providerId===id);
+    const pTasks = Store.tasks.filter(t=>t.providerId===id);
+    const domainMat = Scoring.domainMaturity(id);
+    const tab = this.providerDetailTab || 'profile';
+
+    el.innerHTML = `
+      <div class="detail-back" onclick="App.currentProviderId=null;App.renderProviders();">← Back to Providers</div>
+      <div class="detail-header">
+        <div>
+          <div class="detail-title">${Utils.escHtml(p.name)}</div>
+          <div class="detail-meta">
+            <span class="badge badge-${p.status==='Active'?'success':p.status==='Archived'?'neutral':'primary'}">${p.status}</span>
+            <span class="badge badge-${p.criticality.toLowerCase()}">${p.criticality} Criticality</span>
+            <span class="badge badge-${rTier.toLowerCase()}">Residual: ${rTier}</span>
+            ${p.criticalFunction ? '<span class="badge badge-info">Critical/Important Function</span>' : ''}
+          </div>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-outline btn-sm" onclick="App.openProviderModal('${id}')">Edit</button>
+        </div>
+      </div>
+
+      <div class="tabs" id="detail-tabs">
+        <div class="tab ${tab==='profile'?'active':''}" data-tab="profile">Profile</div>
+        <div class="tab ${tab==='controls'?'active':''}" data-tab="controls">Controls & Evidence</div>
+        <div class="tab ${tab==='findings'?'active':''}" data-tab="findings">Findings (${pFindings.filter(f=>f.status!=='Closed').length})</div>
+        <div class="tab ${tab==='tasks'?'active':''}" data-tab="tasks">Tasks (${pTasks.length})</div>
+      </div>
+      <div id="detail-content"></div>
+    `;
+
+    document.getElementById('detail-tabs').addEventListener('click', e => {
+      const t = e.target.closest('.tab');
+      if (!t) return;
+      this.providerDetailTab = t.dataset.tab;
+      this.renderProviderDetail(id);
+    });
+
+    const dc = document.getElementById('detail-content');
+    if (tab === 'profile') {
+      dc.innerHTML = `
+        <div class="card">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+            <div>
+              <h4 style="font-size:13px;font-weight:700;margin-bottom:12px;color:var(--text-secondary);">General Information</h4>
+              <table style="font-size:13px;"><tbody>
+                <tr><td style="padding:4px 16px 4px 0;color:var(--text-muted);white-space:nowrap;">Legal Name</td><td>${Utils.escHtml(p.legalName||'—')}</td></tr>
+                <tr><td style="padding:4px 16px 4px 0;color:var(--text-muted);">Contract ID</td><td>${Utils.escHtml(p.contractId||'—')}</td></tr>
+                <tr><td style="padding:4px 16px 4px 0;color:var(--text-muted);">Service</td><td>${Utils.escHtml(p.service||'—')}</td></tr>
+                <tr><td style="padding:4px 16px 4px 0;color:var(--text-muted);">Country</td><td>${Utils.escHtml(p.country||'—')}</td></tr>
+                <tr><td style="padding:4px 16px 4px 0;color:var(--text-muted);">Data Locations</td><td>${Utils.escHtml(p.dataLocations||'—')}</td></tr>
+                <tr><td style="padding:4px 16px 4px 0;color:var(--text-muted);">Cloud Model</td><td>${p.cloudModel}</td></tr>
+                <tr><td style="padding:4px 16px 4px 0;color:var(--text-muted);">Access Level</td><td>${p.accessLevel}</td></tr>
+                <tr><td style="padding:4px 16px 4px 0;color:var(--text-muted);">Sub-outsourcing</td><td>${p.subOutsourcing?'Yes — '+Utils.escHtml(p.subList):'No'}</td></tr>
+              </tbody></table>
+            </div>
+            <div>
+              <h4 style="font-size:13px;font-weight:700;margin-bottom:12px;color:var(--text-secondary);">Risk & Oversight</h4>
+              <table style="font-size:13px;"><tbody>
+                <tr><td style="padding:4px 16px 4px 0;color:var(--text-muted);">Inherent Risk</td><td><span class="badge badge-${iTier.toLowerCase()}">${iTier}</span> <span class="text-xs text-muted">(score: ${iScore})</span></td></tr>
+                <tr><td style="padding:4px 16px 4px 0;color:var(--text-muted);">Residual Risk</td><td><span class="badge badge-${rTier.toLowerCase()}">${rTier}</span></td></tr>
+                <tr><td style="padding:4px 16px 4px 0;color:var(--text-muted);">Control Maturity</td><td><div style="display:flex;align-items:center;gap:8px;"><div class="progress-bar" style="width:100px"><div class="progress-fill ${mat>=85?'green':mat>=60?'yellow':'red'}" style="width:${mat}%"></div></div>${mat}%</div></td></tr>
+                <tr><td style="padding:4px 16px 4px 0;color:var(--text-muted);">Last Assessment</td><td>${Utils.formatDate(p.lastAssessment)}</td></tr>
+                <tr><td style="padding:4px 16px 4px 0;color:var(--text-muted);">Next Review</td><td>${Utils.formatDate(nr)}</td></tr>
+                <tr><td style="padding:4px 16px 4px 0;color:var(--text-muted);">Business Owner</td><td>${Utils.escHtml(p.businessOwner||'—')}</td></tr>
+                <tr><td style="padding:4px 16px 4px 0;color:var(--text-muted);">Relationship Mgr</td><td>${Utils.escHtml(p.relationshipManager||'—')}</td></tr>
+              </tbody></table>
+              <h4 style="font-size:13px;font-weight:700;margin:16px 0 8px;color:var(--text-secondary);">Contact</h4>
+              <p class="text-sm">${Utils.escHtml(p.contactName||'')} ${p.contactEmail?'· '+Utils.escHtml(p.contactEmail):''} ${p.contactPhone?'· '+Utils.escHtml(p.contactPhone):''}</p>
+              <h4 style="font-size:13px;font-weight:700;margin:16px 0 8px;color:var(--text-secondary);">Data Categories</h4>
+              <div style="display:flex;flex-wrap:wrap;gap:4px;">${(p.dataCategories||[]).map(c=>`<span class="badge badge-neutral">${c}</span>`).join('')||'—'}</div>
+            </div>
+          </div>
+          ${p.notes ? `<div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);"><h4 style="font-size:13px;font-weight:700;margin-bottom:6px;color:var(--text-secondary);">Notes</h4><p class="text-sm">${Utils.escHtml(p.notes)}</p></div>` : ''}
+        </div>
+        <div class="card"><h4 style="font-size:13px;font-weight:700;margin-bottom:12px;">Domain Maturity Breakdown</h4>
+          ${Object.entries(DORA_DOMAINS).map(([k,d])=>{
+            const m = domainMat[k]||0;
+            return `<div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+              <span class="text-xs" style="min-width:260px;color:var(--text-secondary);">${d.name}</span>
+              <div class="progress-bar" style="flex:1"><div class="progress-fill ${m>=85?'green':m>=60?'yellow':'red'}" style="width:${m}%"></div></div>
+              <span class="text-xs fw-600" style="min-width:36px;text-align:right;">${m}%</span>
+            </div>`;
+          }).join('')}
+        </div>
+      `;
+    } else if (tab === 'controls') {
+      this.renderProviderControls(dc, id);
+    } else if (tab === 'findings') {
+      this.renderProviderFindings(dc, id, pFindings);
+    } else if (tab === 'tasks') {
+      this.renderProviderTasks(dc, id, pTasks);
+    }
+  },
+
+  renderProviderControls(container, providerId) {
+    const ctrls = Store.getControls(providerId);
+    let html = `<div class="flex-between mb-8"><span class="text-sm text-muted">Set control status and attach evidence metadata for each DORA domain.</span></div>`;
+    for (const [dk, domain] of Object.entries(DORA_DOMAINS)) {
+      const items = domain.items;
+      const domCtrl = ctrls[dk] || {};
+      const mat = (() => { let t=0,p=0; Object.values(domCtrl).forEach(v=>{t++;if(v.status==='Pass'||v.status==='N/A')p++;}); return t?Math.round(p/t*100):0; })();
+      html += `<div class="control-domain">
+        <div class="control-domain-header" onclick="this.parentElement.classList.toggle('collapsed')">
+          <span>${dk}) ${domain.name}</span>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div class="progress-bar" style="width:80px"><div class="progress-fill ${mat>=85?'green':mat>=60?'yellow':'red'}" style="width:${mat}%"></div></div>
+            <span class="text-xs fw-600">${mat}%</span>
+          </div>
+        </div>
+        ${items.map((item, i) => {
+          const ik = `${dk}-${i}`;
+          const st = domCtrl[ik]?.status || 'Not Started';
+          const ev = domCtrl[ik]?.evidence || [];
+          const stClass = st==='Pass'?'pass':st==='Fail'?'fail':st==='In Progress'?'in-progress':st==='N/A'?'na':'';
+          return `<div class="control-item">
+            <select class="control-status-select ${stClass}" onchange="App.setControlStatus('${providerId}','${dk}','${ik}',this.value);App.renderProviderDetail('${providerId}')">
+              <option ${st==='Not Started'?'selected':''}>Not Started</option>
+              <option ${st==='In Progress'?'selected':''}>In Progress</option>
+              <option ${st==='Pass'?'selected':''}>Pass</option>
+              <option ${st==='Fail'?'selected':''}>Fail</option>
+              <option ${st==='N/A'?'selected':''}>N/A</option>
+            </select>
+            <div class="control-item-text">
+              <span>${Utils.escHtml(item)}</span>
+              <div class="evidence-list">
+                ${ev.map(e=>`<div class="evidence-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> ${Utils.escHtml(e.title)} <span class="text-muted">— ${Utils.formatDate(e.date)}</span></div>`).join('')}
+              </div>
+              <button class="btn btn-xs btn-outline" style="margin-top:4px;" onclick="App.addEvidenceModal('${providerId}','${dk}','${ik}')">+ Evidence</button>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>`;
+    }
+    container.innerHTML = html;
+  },
+
+  setControlStatus(pid, dk, ik, status) {
+    Store.setControlStatus(pid, dk, ik, status);
+  },
+
+  addEvidenceModal(pid, dk, ik) {
+    Modal.open('Add Evidence',
+      `<form id="ev-form" onsubmit="return false;">
+        <div class="form-group"><label class="form-label">Title <span class="required">*</span></label><input class="form-control" id="ev-title" required></div>
+        <div class="form-group"><label class="form-label">Description</label><textarea class="form-control" id="ev-desc"></textarea></div>
+        <div class="form-group"><label class="form-label">Link / Path</label><input class="form-control" id="ev-link" placeholder="e.g. SharePoint URL or file path"></div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Date</label><input class="form-control" id="ev-date" type="date" value="${Utils.today()}"></div>
+          <div class="form-group"><label class="form-label">Owner</label><select class="form-control" id="ev-owner"><option value="">Select...</option>${Store.settings.ownersList.map(o=>`<option>${o}</option>`).join('')}</select></div>
+        </div>
+      </form>`,
+      `<button class="btn btn-outline" onclick="Modal.close()">Cancel</button><button class="btn btn-primary" onclick="App.saveEvidence('${pid}','${dk}','${ik}')">Save</button>`
+    );
+  },
+
+  saveEvidence(pid, dk, ik) {
+    const title = document.getElementById('ev-title').value.trim();
+    if (!title) { Toast.show('Title is required','error'); return; }
+    Store.addEvidence(pid, dk, ik, {
+      id: Utils.uid(),
+      title,
+      description: document.getElementById('ev-desc').value.trim(),
+      link: document.getElementById('ev-link').value.trim(),
+      date: document.getElementById('ev-date').value,
+      owner: document.getElementById('ev-owner').value,
+    });
+    Modal.close();
+    Toast.show('Evidence added');
+    this.renderProviderDetail(pid);
+  },
+
+  renderProviderFindings(container, pid, pFindings) {
+    const open = pFindings.filter(f=>f.status!=='Closed');
+    const closed = pFindings.filter(f=>f.status==='Closed');
+    container.innerHTML = `
+      <div class="flex-between mb-8">
+        <span class="text-sm text-muted">${open.length} open findings</span>
+        <button class="btn btn-primary btn-sm" onclick="App.openFindingModal('','${pid}')">+ Add Finding</button>
+      </div>
+      ${pFindings.length === 0 ? '<div class="empty-state"><h3>No findings</h3><p>No findings recorded for this provider.</p></div>' : `
+        <div class="table-wrap"><table>
+          <thead><tr><th>Title</th><th>DORA Tag</th><th>Severity</th><th>Status</th><th>Owner</th><th>Due</th><th>Actions</th></tr></thead>
+          <tbody>${pFindings.map(f=>`<tr>
+            <td><strong>${Utils.escHtml(f.title)}</strong></td>
+            <td><span class="badge badge-neutral">${f.doraTag}</span></td>
+            <td><span class="badge badge-${f.severity.toLowerCase()}">${f.severity}</span></td>
+            <td><span class="badge badge-${f.status==='Closed'?'success':f.status==='In Progress'?'warning':'danger'}">${f.status}</span></td>
+            <td class="text-sm">${Utils.escHtml(f.owner||'')}</td>
+            <td class="text-sm">${Utils.formatDate(f.dueDate)}</td>
+            <td><div class="btn-group"><button class="btn-icon" title="Edit" onclick="App.openFindingModal('${f.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button></div></td>
+          </tr>`).join('')}</tbody>
+        </table></div>
+      `}
+    `;
+  },
+
+  renderProviderTasks(container, pid, pTasks) {
+    container.innerHTML = `
+      <div class="flex-between mb-8">
+        <span class="text-sm text-muted">${pTasks.length} scheduled tasks</span>
+        <button class="btn btn-primary btn-sm" onclick="App.openTaskModal('','${pid}')">+ Add Task</button>
+      </div>
+      ${pTasks.length === 0 ? '<div class="empty-state"><h3>No tasks</h3><p>No monitoring or audit tasks scheduled.</p></div>' : `
+        <div class="table-wrap"><table>
+          <thead><tr><th>Task</th><th>Type</th><th>Frequency</th><th>Next Due</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody>${pTasks.map(t=>{
+            const overdue = t.status!=='Completed' && t.nextDue < Utils.today();
+            return `<tr>
+              <td><strong>${Utils.escHtml(t.name)}</strong></td>
+              <td class="text-sm">${Utils.escHtml(t.type)}</td>
+              <td class="text-sm">${t.frequency}</td>
+              <td class="text-sm ${overdue?'badge badge-danger':''}">${Utils.formatDate(t.nextDue)}</td>
+              <td><span class="badge badge-${t.status==='Completed'?'success':overdue?'danger':'primary'}">${overdue&&t.status!=='Completed'?'Overdue':t.status}</span></td>
+              <td><div class="btn-group">
+                ${t.status!=='Completed'?`<button class="btn btn-xs btn-success" onclick="App.completeTask('${t.id}','${pid}')">Complete</button>`:''}
+                <button class="btn-icon" title="Edit" onclick="App.openTaskModal('${t.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+              </div></td>
+            </tr>`;
+          }).join('')}</tbody>
+        </table></div>
+      `}
+    `;
+  },
+
+  /* ===== CONTROLS PAGE (GLOBAL) ===== */
+  renderControlsPage() {
+    const el = document.getElementById('page-controls');
+    const activeProviders = Store.providers.filter(p=>p.status!=='Archived');
+    el.innerHTML = `
+      <h2 style="font-size:22px;font-weight:700;letter-spacing:-0.5px;margin-bottom:6px;">DORA Controls & Evidence</h2>
+      <p class="text-sm text-muted mb-16">Select a provider to manage their DORA-aligned control checklist.</p>
+      <div class="filter-bar mb-16">
+        <select id="ctrl-provider-select" class="form-control" style="max-width:300px" onchange="App.renderControlsForSelected()">
+          <option value="">— Select Provider —</option>
+          ${activeProviders.map(p=>`<option value="${p.id}">${Utils.escHtml(p.name)}</option>`).join('')}
+        </select>
+      </div>
+      <div id="ctrl-content"></div>
+    `;
+  },
+
+  renderControlsForSelected() {
+    const pid = document.getElementById('ctrl-provider-select').value;
+    const dc = document.getElementById('ctrl-content');
+    if (!pid) { dc.innerHTML = '<div class="empty-state"><h3>Select a provider</h3></div>'; return; }
+    const p = Store.getProvider(pid);
+    const mat = Scoring.maturity(pid);
+    dc.innerHTML = `<div class="flex-between mb-8"><div><strong>${Utils.escHtml(p.name)}</strong> — Overall Maturity: <span class="fw-600">${mat}%</span></div></div>`;
+    const wrapper = document.createElement('div');
+    dc.appendChild(wrapper);
+    this.renderProviderControls(wrapper, pid);
+  },
+
+  /* ===== FINDINGS PAGE ===== */
+  renderFindings() {
+    const el = document.getElementById('page-findings');
+    const findings = Store.findings;
+    const open = findings.filter(f=>f.status!=='Closed');
+
+    el.innerHTML = `
+      <div class="flex-between mb-16">
+        <div><h2 style="font-size:22px;font-weight:700;letter-spacing:-0.5px;">Findings & Remediation</h2>
+        <p class="text-sm text-muted">${open.length} open findings across all providers</p></div>
+        <button class="btn btn-primary" onclick="App.openFindingModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add Finding</button>
+      </div>
+      <div class="filter-bar">
+        <select id="finding-filter-sev" onchange="App.renderFindingsTable()"><option value="">All Severities</option>${FINDING_SEVERITIES.map(s=>`<option>${s}</option>`).join('')}</select>
+        <select id="finding-filter-status" onchange="App.renderFindingsTable()"><option value="">All Statuses</option>${FINDING_STATUSES.map(s=>`<option>${s}</option>`).join('')}</select>
+        <select id="finding-filter-tag" onchange="App.renderFindingsTable()"><option value="">All DORA Tags</option>${DORA_TAGS.map(s=>`<option>${s}</option>`).join('')}</select>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden;">
+        <div class="table-wrap"><table>
+          <thead><tr><th>Title</th><th>Provider</th><th>DORA Tag</th><th>Severity</th><th>Status</th><th>Owner</th><th>Due Date</th><th>Actions</th></tr></thead>
+          <tbody id="findings-tbody"></tbody>
+        </table></div>
+      </div>
+    `;
+    this.renderFindingsTable();
+  },
+
+  renderFindingsTable() {
+    let fs = [...Store.findings];
+    const sev = document.getElementById('finding-filter-sev')?.value;
+    const st = document.getElementById('finding-filter-status')?.value;
+    const tag = document.getElementById('finding-filter-tag')?.value;
+    if (sev) fs = fs.filter(f=>f.severity===sev);
+    if (st) fs = fs.filter(f=>f.status===st);
+    if (tag) fs = fs.filter(f=>f.doraTag===tag);
+
+    const tbody = document.getElementById('findings-tbody');
+    if (!tbody) return;
+    if (fs.length===0) { tbody.innerHTML='<tr><td colspan="8"><div class="empty-state"><h3>No findings found</h3></div></td></tr>'; return; }
+    tbody.innerHTML = fs.map(f=>{
+      const p = Store.getProvider(f.providerId);
+      return `<tr>
+        <td><strong>${Utils.escHtml(f.title)}</strong><br><span class="text-xs text-muted">${Utils.escHtml((f.description||'').substring(0,60))}</span></td>
+        <td class="clickable text-sm" onclick="App.navigate('providers','${f.providerId}')">${Utils.escHtml(p?.name||'Unknown')}</td>
+        <td><span class="badge badge-neutral">${f.doraTag}</span></td>
+        <td><span class="badge badge-${f.severity.toLowerCase()}">${f.severity}</span></td>
+        <td><span class="badge badge-${f.status==='Closed'?'success':f.status==='In Progress'?'warning':'danger'}">${f.status}</span></td>
+        <td class="text-sm">${Utils.escHtml(f.owner||'')}</td>
+        <td class="text-sm">${Utils.formatDate(f.dueDate)}</td>
+        <td><div class="btn-group">
+          <button class="btn-icon" title="Edit" onclick="App.openFindingModal('${f.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+          <button class="btn-icon" title="Delete" onclick="App.confirmDeleteFinding('${f.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button>
+        </div></td>
+      </tr>`;
+    }).join('');
+  },
+
+  openFindingModal(id, preProviderId) {
+    const f = id ? Store.getFinding(id) : null;
+    const providers = Store.providers.filter(p=>p.status!=='Archived');
+    const body = `
+      <form id="finding-form" onsubmit="return false;">
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Provider <span class="required">*</span></label><select class="form-control" id="ff-provider">${providers.map(p=>`<option value="${p.id}" ${(f?.providerId||preProviderId)===p.id?'selected':''}>${Utils.escHtml(p.name)}</option>`).join('')}</select></div>
+          <div class="form-group"><label class="form-label">DORA Relevance Tag</label><select class="form-control" id="ff-tag">${DORA_TAGS.map(t=>`<option ${f?.doraTag===t?'selected':''}>${t}</option>`).join('')}</select></div>
+        </div>
+        <div class="form-group"><label class="form-label">Finding Title <span class="required">*</span></label><input class="form-control" id="ff-title" value="${Utils.escHtml(f?.title||'')}" required></div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Severity</label><select class="form-control" id="ff-severity">${FINDING_SEVERITIES.map(s=>`<option ${f?.severity===s?'selected':''}>${s}</option>`).join('')}</select></div>
+          <div class="form-group"><label class="form-label">Status</label><select class="form-control" id="ff-status">${FINDING_STATUSES.map(s=>`<option ${f?.status===s?'selected':''}>${s}</option>`).join('')}</select></div>
+        </div>
+        <div class="form-group"><label class="form-label">Description / Impact</label><textarea class="form-control" id="ff-desc">${Utils.escHtml(f?.description||'')}</textarea></div>
+        <div class="form-group"><label class="form-label">Recommendation</label><textarea class="form-control" id="ff-rec">${Utils.escHtml(f?.recommendation||'')}</textarea></div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Owner</label><select class="form-control" id="ff-owner"><option value="">Select...</option>${Store.settings.ownersList.map(o=>`<option ${f?.owner===o?'selected':''}>${o}</option>`).join('')}</select></div>
+          <div class="form-group"><label class="form-label">Due Date</label><input class="form-control" id="ff-due" type="date" value="${f?.dueDate||''}"></div>
+        </div>
+        <div class="form-group"><label class="form-label">Closure Notes</label><textarea class="form-control" id="ff-closure">${Utils.escHtml(f?.closureNotes||'')}</textarea></div>
+      </form>
+    `;
+    Modal.open(f ? 'Edit Finding' : 'Add Finding', body,
+      `<button class="btn btn-outline" onclick="Modal.close()">Cancel</button><button class="btn btn-primary" onclick="App.saveFinding('${id||''}')">Save</button>`
+    );
+  },
+
+  saveFinding(id) {
+    const title = document.getElementById('ff-title').value.trim();
+    if (!title) { Toast.show('Title is required','error'); return; }
+    const status = document.getElementById('ff-status').value;
+    const f = {
+      id: id || Utils.uid(),
+      providerId: document.getElementById('ff-provider').value,
+      title,
+      doraTag: document.getElementById('ff-tag').value,
+      severity: document.getElementById('ff-severity').value,
+      description: document.getElementById('ff-desc').value.trim(),
+      recommendation: document.getElementById('ff-rec').value.trim(),
+      owner: document.getElementById('ff-owner').value,
+      dueDate: document.getElementById('ff-due').value,
+      status,
+      closureNotes: document.getElementById('ff-closure').value.trim(),
+      closedDate: status === 'Closed' ? (id && Store.getFinding(id)?.closedDate ? Store.getFinding(id).closedDate : Utils.today()) : '',
+    };
+    Store.saveFinding(f);
+    Modal.close();
+    Toast.show(id ? 'Finding updated' : 'Finding added');
+    if (this.currentProviderId) this.renderProviderDetail(this.currentProviderId);
+    else this.renderFindings();
+    this.updateBadges();
+  },
+
+  confirmDeleteFinding(id) {
+    Modal.open('Delete Finding',
+      '<p>Are you sure you want to delete this finding?</p>',
+      `<button class="btn btn-outline" onclick="Modal.close()">Cancel</button><button class="btn btn-danger" onclick="Store.deleteFinding('${id}');Modal.close();Toast.show('Finding deleted');App.renderFindings();App.updateBadges();">Delete</button>`
+    );
+  },
+
+  /* ===== TASKS PAGE ===== */
+  renderTasks() {
+    const el = document.getElementById('page-tasks');
+    const tasks = Store.tasks;
+    const today = Utils.today();
+    // Update overdue statuses
+    tasks.forEach(t => {
+      if (t.status === 'Pending' && t.nextDue < today) t.status = 'Overdue';
+    });
+    Store.save();
+
+    const overdue = tasks.filter(t=>t.status==='Overdue');
+    const upcoming30 = tasks.filter(t=>t.status==='Pending' && t.nextDue >= today && t.nextDue <= Utils.addDays(today,30));
+    const upcoming60 = tasks.filter(t=>t.status==='Pending' && t.nextDue > Utils.addDays(today,30) && t.nextDue <= Utils.addDays(today,60));
+    const upcoming90 = tasks.filter(t=>t.status==='Pending' && t.nextDue > Utils.addDays(today,60) && t.nextDue <= Utils.addDays(today,90));
+
+    const renderTaskList = (tasks, label) => {
+      if (tasks.length===0) return '';
+      return `<div class="calendar-month"><h4>${label} (${tasks.length})</h4>
+        ${tasks.sort((a,b)=>a.nextDue.localeCompare(b.nextDue)).map(t=>{
+          const p = Store.getProvider(t.providerId);
+          const isOverdue = t.status==='Overdue';
+          return `<div class="task-list-item ${isOverdue?'overdue':''}" >
+            <div class="task-date">${Utils.formatDate(t.nextDue)}</div>
+            <div class="task-info">
+              <strong>${Utils.escHtml(t.name)}</strong><br>
+              <small class="clickable" onclick="App.navigate('providers','${t.providerId}')">${Utils.escHtml(p?.name||'')}</small> · <small>${t.type}</small> · <small>Owner: ${Utils.escHtml(t.owner||'—')}</small>
+            </div>
+            <span class="badge badge-${isOverdue?'danger':t.status==='Completed'?'success':'primary'}">${t.status}</span>
+            <div class="btn-group">
+              ${t.status!=='Completed'?`<button class="btn btn-xs btn-success" onclick="App.completeTask('${t.id}')">✓</button>`:''}
+              <button class="btn-icon" title="Edit" onclick="App.openTaskModal('${t.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+              <button class="btn-icon" title="Delete" onclick="Store.deleteTask('${t.id}');Toast.show('Task deleted');App.renderTasks();"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>`;
+    };
+
+    el.innerHTML = `
+      <div class="flex-between mb-16">
+        <div><h2 style="font-size:22px;font-weight:700;letter-spacing:-0.5px;">Monitoring & Audit Plan</h2>
+        <p class="text-sm text-muted">Schedule and track ongoing oversight activities</p></div>
+        <button class="btn btn-primary" onclick="App.openTaskModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add Task</button>
+      </div>
+      <div class="kpi-grid mb-16">
+        <div class="kpi-card kpi-danger"><div class="kpi-label">Overdue</div><div class="kpi-value">${overdue.length}</div></div>
+        <div class="kpi-card kpi-warning"><div class="kpi-label">Due in 30 days</div><div class="kpi-value">${upcoming30.length}</div></div>
+        <div class="kpi-card kpi-accent"><div class="kpi-label">Due 31–60 days</div><div class="kpi-value">${upcoming60.length}</div></div>
+        <div class="kpi-card kpi-success"><div class="kpi-label">Due 61–90 days</div><div class="kpi-value">${upcoming90.length}</div></div>
+      </div>
+      ${renderTaskList(overdue,'Overdue')}
+      ${renderTaskList(upcoming30,'Due in Next 30 Days')}
+      ${renderTaskList(upcoming60,'Due in 31–60 Days')}
+      ${renderTaskList(upcoming90,'Due in 61–90 Days')}
+      ${overdue.length+upcoming30.length+upcoming60.length+upcoming90.length===0 ? '<div class="empty-state"><h3>No upcoming tasks</h3><p>All monitoring activities are on track.</p></div>':''}
+    `;
+  },
+
+  openTaskModal(id, preProviderId) {
+    const t = id ? Store.getTask(id) : null;
+    const providers = Store.providers.filter(p=>p.status!=='Archived');
+    const ecl = t ? (t.evidenceChecklist||[]) : [];
+    const body = `
+      <form id="task-form" onsubmit="return false;">
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Provider <span class="required">*</span></label><select class="form-control" id="tf-provider">${providers.map(p=>`<option value="${p.id}" ${(t?.providerId||preProviderId)===p.id?'selected':''}>${Utils.escHtml(p.name)}</option>`).join('')}</select></div>
+          <div class="form-group"><label class="form-label">Task Type</label><select class="form-control" id="tf-type">${TASK_TYPES.map(x=>`<option ${t?.type===x?'selected':''}>${x}</option>`).join('')}</select></div>
+        </div>
+        <div class="form-group"><label class="form-label">Task Name <span class="required">*</span></label><input class="form-control" id="tf-name" value="${Utils.escHtml(t?.name||'')}" required></div>
+        <div class="form-row-3">
+          <div class="form-group"><label class="form-label">Frequency</label><select class="form-control" id="tf-freq">${TASK_FREQUENCIES.map(f=>`<option ${t?.frequency===f?'selected':''}>${f}</option>`).join('')}</select></div>
+          <div class="form-group"><label class="form-label">Start Date</label><input class="form-control" id="tf-start" type="date" value="${t?.startDate||Utils.today()}"></div>
+          <div class="form-group"><label class="form-label">Next Due</label><input class="form-control" id="tf-nextDue" type="date" value="${t?.nextDue||''}"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Owner</label><select class="form-control" id="tf-owner"><option value="">Select...</option>${Store.settings.ownersList.map(o=>`<option ${t?.owner===o?'selected':''}>${o}</option>`).join('')}</select></div>
+          <div class="form-group"><label class="form-label">Priority</label><select class="form-control" id="tf-priority"><option ${t?.priority==='Low'?'selected':''}>Low</option><option ${t?.priority==='Medium'||!t?'selected':''}>Medium</option><option ${t?.priority==='High'?'selected':''}>High</option></select></div>
+        </div>
+        <div class="form-group"><label class="form-label">Notes</label><textarea class="form-control" id="tf-notes">${Utils.escHtml(t?.notes||'')}</textarea></div>
+        <div class="form-group">
+          <label class="form-label">Evidence Checklist</label>
+          <div id="tf-ecl">${ecl.map((e,i)=>`<div class="form-check mb-8"><input type="checkbox" ${e.done?'checked':''} data-idx="${i}"><input class="form-control" style="flex:1" value="${Utils.escHtml(e.text)}" data-idx="${i}"></div>`).join('')}</div>
+          <button type="button" class="btn btn-xs btn-outline" onclick="App.addEclItem()">+ Add checklist item</button>
+        </div>
+      </form>
+    `;
+    Modal.open(t ? 'Edit Task' : 'Add Task', body,
+      `<button class="btn btn-outline" onclick="Modal.close()">Cancel</button><button class="btn btn-primary" onclick="App.saveTask('${id||''}')">Save</button>`
+    );
+  },
+
+  addEclItem() {
+    const div = document.getElementById('tf-ecl');
+    const idx = div.children.length;
+    const item = document.createElement('div');
+    item.className = 'form-check mb-8';
+    item.innerHTML = `<input type="checkbox" data-idx="${idx}"><input class="form-control" style="flex:1" placeholder="Evidence item" data-idx="${idx}">`;
+    div.appendChild(item);
+  },
+
+  saveTask(id) {
+    const name = document.getElementById('tf-name').value.trim();
+    if (!name) { Toast.show('Task name is required','error'); return; }
+    const freq = document.getElementById('tf-freq').value;
+    const start = document.getElementById('tf-start').value;
+    let nextDue = document.getElementById('tf-nextDue').value;
+    if (!nextDue && start) {
+      const days = FREQ_DAYS[freq] || 90;
+      nextDue = Utils.addDays(start, days);
+    }
+
+    const eclItems = [];
+    document.querySelectorAll('#tf-ecl .form-check').forEach(row => {
+      const cb = row.querySelector('input[type="checkbox"]');
+      const txt = row.querySelector('input.form-control');
+      if (txt && txt.value.trim()) eclItems.push({ text: txt.value.trim(), done: cb.checked });
+    });
+
+    const t = {
+      id: id || Utils.uid(),
+      providerId: document.getElementById('tf-provider').value,
+      type: document.getElementById('tf-type').value,
+      name,
+      frequency: freq,
+      startDate: start,
+      nextDue,
+      owner: document.getElementById('tf-owner').value,
+      priority: document.getElementById('tf-priority').value,
+      status: id ? Store.getTask(id)?.status || 'Pending' : 'Pending',
+      notes: document.getElementById('tf-notes').value.trim(),
+      evidenceChecklist: eclItems,
+      completedDate: id ? Store.getTask(id)?.completedDate : '',
+    };
+    Store.saveTask(t);
+    Modal.close();
+    Toast.show(id ? 'Task updated' : 'Task added');
+    if (this.currentProviderId) this.renderProviderDetail(this.currentProviderId);
+    else this.renderTasks();
+    this.updateBadges();
+  },
+
+  completeTask(id, returnPid) {
+    const t = Store.getTask(id);
+    if (!t) return;
+    t.status = 'Completed';
+    t.completedDate = Utils.today();
+    Store.saveTask(t);
+
+    // Auto-schedule next instance
+    const days = FREQ_DAYS[t.frequency] || (t.frequency === 'Custom' ? 90 : 365);
+    const next = {
+      ...t,
+      id: Utils.uid(),
+      status: 'Pending',
+      completedDate: '',
+      nextDue: Utils.addDays(Utils.today(), days),
+      startDate: Utils.today(),
+      evidenceChecklist: t.evidenceChecklist.map(e=>({...e, done:false})),
+    };
+    Store.saveTask(next);
+    Toast.show('Task completed. Next instance scheduled.');
+    if (returnPid || this.currentProviderId) this.renderProviderDetail(returnPid || this.currentProviderId);
+    else this.renderTasks();
+    this.updateBadges();
+  },
+
+  /* ===== REPORTS ===== */
+  renderReports() {
+    const el = document.getElementById('page-reports');
+    const providers = Store.providers.filter(p=>p.status!=='Archived');
+    el.innerHTML = `
+      <h2 style="font-size:22px;font-weight:700;letter-spacing:-0.5px;margin-bottom:6px;">Reports</h2>
+      <p class="text-sm text-muted mb-16">Generate executive summaries and per-provider reports.</p>
+
+      <div class="card">
+        <h3 class="card-title mb-8">Report Configuration</h3>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Select Providers (hold Ctrl/Cmd for multi)</label>
+            <select class="form-control" id="rpt-providers" multiple size="5">${providers.map(p=>`<option value="${p.id}" selected>${Utils.escHtml(p.name)}</option>`).join('')}</select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Include Sections</label>
+            <label class="form-check mb-8"><input type="checkbox" id="rpt-exec" checked> Executive Summary KPIs</label>
+            <label class="form-check mb-8"><input type="checkbox" id="rpt-profiles" checked> Provider Profiles</label>
+            <label class="form-check mb-8"><input type="checkbox" id="rpt-findings" checked> Top Findings</label>
+            <label class="form-check mb-8"><input type="checkbox" id="rpt-tasks" checked> Overdue Tasks</label>
+            <label class="form-check mb-8"><input type="checkbox" id="rpt-maturity" checked> Domain Maturity</label>
+          </div>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="App.generateReport()">Preview Report</button>
+          <button class="btn btn-success" onclick="App.exportReportPDF()">Export PDF</button>
+          <button class="btn btn-outline" onclick="App.exportJSON()">Export JSON Backup</button>
+        </div>
+      </div>
+      <div id="report-output" style="margin-top:20px;"></div>
+    `;
+  },
+
+  generateReport() {
+    const selOpts = document.getElementById('rpt-providers');
+    const selIds = [...selOpts.selectedOptions].map(o=>o.value);
+    const ps = selIds.map(id=>Store.getProvider(id)).filter(Boolean);
+    const showExec = document.getElementById('rpt-exec').checked;
+    const showProfiles = document.getElementById('rpt-profiles').checked;
+    const showFindings = document.getElementById('rpt-findings').checked;
+    const showTasks = document.getElementById('rpt-tasks').checked;
+    const showMaturity = document.getElementById('rpt-maturity').checked;
+
+    let html = `<div class="report-preview" id="report-content">
+      <h1>DORA ICT Third-Party Risk Management Report</h1>
+      <div class="rpt-meta">Generated: ${Utils.formatDate(Utils.today())} | Providers: ${ps.length} | Classification: Internal</div>`;
+
+    if (showExec) {
+      const openF = Store.findings.filter(f=>f.status!=='Closed');
+      const critF = openF.filter(f=>f.severity==='Critical').length;
+      const highRisk = ps.filter(p=>Scoring.residualTier(p)==='High').length;
+      const critFunc = ps.filter(p=>p.criticalFunction).length;
+      const avgMat = ps.length ? Math.round(ps.reduce((s,p)=>s+Scoring.maturity(p.id),0)/ps.length) : 0;
+      html += `<h2>Executive Summary</h2>
+        <table><thead><tr><th>Metric</th><th>Value</th></tr></thead><tbody>
+          <tr><td>Active Providers in Scope</td><td>${ps.length}</td></tr>
+          <tr><td>Supporting Critical/Important Functions</td><td>${critFunc}</td></tr>
+          <tr><td>High Residual Risk Providers</td><td>${highRisk}</td></tr>
+          <tr><td>Open Findings</td><td>${openF.length} (${critF} Critical)</td></tr>
+          <tr><td>Average Control Maturity</td><td>${avgMat}%</td></tr>
+        </tbody></table>`;
+    }
+
+    if (showProfiles) {
+      html += `<h2>Provider Summary</h2><table><thead><tr><th>Provider</th><th>Criticality</th><th>Inherent</th><th>Residual</th><th>Maturity</th><th>CIF</th><th>Next Review</th></tr></thead><tbody>`;
+      ps.forEach(p => {
+        const it = Scoring.inherentTier(Scoring.inherentScore(p));
+        const rt = Scoring.residualTier(p);
+        const mat = Scoring.maturity(p.id);
+        html += `<tr><td>${Utils.escHtml(p.name)}</td><td>${p.criticality}</td><td>${it}</td><td>${rt}</td><td>${mat}%</td><td>${p.criticalFunction?'Yes':'No'}</td><td>${Utils.formatDate(Scoring.nextReviewDate(p))}</td></tr>`;
+      });
+      html += '</tbody></table>';
+    }
+
+    ps.forEach(p => {
+      html += `<h2>${Utils.escHtml(p.name)}</h2>`;
+      html += `<p><strong>Service:</strong> ${Utils.escHtml(p.service||'N/A')} | <strong>Contract:</strong> ${Utils.escHtml(p.contractId||'N/A')} | <strong>Status:</strong> ${p.status}</p>`;
+      html += `<p><strong>Inherent Risk:</strong> ${Scoring.inherentTier(Scoring.inherentScore(p))} | <strong>Residual Risk:</strong> ${Scoring.residualTier(p)} | <strong>Maturity:</strong> ${Scoring.maturity(p.id)}%</p>`;
+
+      if (showFindings) {
+        const pf = Store.findings.filter(f=>f.providerId===p.id && f.status!=='Closed');
+        if (pf.length > 0) {
+          html += `<h3>Open Findings</h3><table><thead><tr><th>Title</th><th>Severity</th><th>Status</th><th>Due</th></tr></thead><tbody>`;
+          pf.forEach(f => html += `<tr><td>${Utils.escHtml(f.title)}</td><td>${f.severity}</td><td>${f.status}</td><td>${Utils.formatDate(f.dueDate)}</td></tr>`);
+          html += '</tbody></table>';
+        }
+      }
+
+      if (showTasks) {
+        const pt = Store.tasks.filter(t=>t.providerId===p.id && (t.status==='Overdue' || (t.status==='Pending' && t.nextDue < Utils.today())));
+        if (pt.length > 0) {
+          html += `<h3>Overdue Tasks</h3><table><thead><tr><th>Task</th><th>Due</th><th>Owner</th></tr></thead><tbody>`;
+          pt.forEach(t => html += `<tr><td>${Utils.escHtml(t.name)}</td><td>${Utils.formatDate(t.nextDue)}</td><td>${Utils.escHtml(t.owner||'')}</td></tr>`);
+          html += '</tbody></table>';
+        }
+      }
+
+      if (showMaturity) {
+        const dm = Scoring.domainMaturity(p.id);
+        html += `<h3>Domain Maturity</h3><table><thead><tr><th>Domain</th><th>Maturity</th></tr></thead><tbody>`;
+        Object.entries(DORA_DOMAINS).forEach(([k,d]) => html += `<tr><td>${d.name}</td><td>${dm[k]||0}%</td></tr>`);
+        html += '</tbody></table>';
+      }
+    });
+
+    html += '</div>';
+    document.getElementById('report-output').innerHTML = html;
+  },
+
+  async exportReportPDF() {
+    this.generateReport();
+    const el = document.getElementById('report-content');
+    if (!el) { Toast.show('Generate a report preview first','error'); return; }
+    Toast.show('Generating PDF...','info');
+    try {
+      const canvas = await html2canvas(el, { scale: 2, useCORS: true, logging: false });
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF('p','mm','a4');
+      const pageW = pdf.internal.pageSize.getWidth();
+      const pageH = pdf.internal.pageSize.getHeight();
+      const margin = 10;
+      const imgW = pageW - 2*margin;
+      const imgH = (canvas.height * imgW) / canvas.width;
+      let y = margin;
+      const pageContentH = pageH - 2*margin;
+
+      if (imgH <= pageContentH) {
+        pdf.addImage(canvas.toDataURL('image/png'), 'PNG', margin, margin, imgW, imgH);
+      } else {
+        // Multi-page
+        let srcY = 0;
+        const sliceH = Math.floor(canvas.width * pageContentH / imgW);
+        while (srcY < canvas.height) {
+          const h = Math.min(sliceH, canvas.height - srcY);
+          const sliceCanvas = document.createElement('canvas');
+          sliceCanvas.width = canvas.width;
+          sliceCanvas.height = h;
+          sliceCanvas.getContext('2d').drawImage(canvas, 0, srcY, canvas.width, h, 0, 0, canvas.width, h);
+          const renderedH = (h * imgW) / canvas.width;
+          if (srcY > 0) pdf.addPage();
+          pdf.addImage(sliceCanvas.toDataURL('image/png'), 'PNG', margin, margin, imgW, renderedH);
+          srcY += h;
+        }
+      }
+      pdf.save(`dora-tprm-report-${Utils.today()}.pdf`);
+      Toast.show('PDF exported successfully');
+    } catch(e) {
+      console.error(e);
+      Toast.show('PDF export failed: ' + e.message, 'error');
+    }
+  },
+
+  /* ===== SETTINGS ===== */
+  renderSettings() {
+    const el = document.getElementById('page-settings');
+    const s = Store.settings;
+    el.innerHTML = `
+      <h2 style="font-size:22px;font-weight:700;letter-spacing:-0.5px;margin-bottom:6px;">Settings</h2>
+      <p class="text-sm text-muted mb-16">Configure risk scoring rules, owners, and manage data.</p>
+
+      <div class="card">
+        <h3 class="card-title mb-8">Review Cadence (months)</h3>
+        <div class="form-row-3">
+          <div class="form-group"><label class="form-label">High Risk</label><input class="form-control" id="set-cad-high" type="number" value="${s.reviewCadence.High}"></div>
+          <div class="form-group"><label class="form-label">Medium Risk</label><input class="form-control" id="set-cad-med" type="number" value="${s.reviewCadence.Medium}"></div>
+          <div class="form-group"><label class="form-label">Low Risk</label><input class="form-control" id="set-cad-low" type="number" value="${s.reviewCadence.Low}"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 class="card-title mb-8">Risk Tier Thresholds</h3>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Low max score (≤)</label><input class="form-control" id="set-low-max" type="number" value="${s.criticalityRules.lowMax}"></div>
+          <div class="form-group"><label class="form-label">Medium max score (≤)</label><input class="form-control" id="set-med-max" type="number" value="${s.criticalityRules.medMax}"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 class="card-title mb-8">Internal Owners List</h3>
+        <div class="form-group"><textarea class="form-control" id="set-owners" rows="4">${s.ownersList.join('\n')}</textarea></div>
+        <p class="text-xs text-muted">One owner role per line.</p>
+      </div>
+
+      <div class="card">
+        <h3 class="card-title mb-8">Data Management</h3>
+        <div class="btn-group" style="flex-wrap:wrap;">
+          <button class="btn btn-primary" onclick="App.saveSettings()">Save Settings</button>
+          <button class="btn btn-outline" onclick="App.exportJSON()">Export JSON Backup</button>
+          <label class="btn btn-outline" style="cursor:pointer;"><input type="file" accept=".json" style="display:none" onchange="App.importJSONFile(event)"> Import JSON Backup</label>
+          <button class="btn btn-danger" onclick="App.confirmReset()">Reset All Data</button>
+        </div>
+      </div>
+    `;
+  },
+
+  saveSettings() {
+    const s = Store.settings;
+    s.reviewCadence.High = parseInt(document.getElementById('set-cad-high').value) || 6;
+    s.reviewCadence.Medium = parseInt(document.getElementById('set-cad-med').value) || 12;
+    s.reviewCadence.Low = parseInt(document.getElementById('set-cad-low').value) || 24;
+    s.criticalityRules.lowMax = parseInt(document.getElementById('set-low-max').value) || 6;
+    s.criticalityRules.medMax = parseInt(document.getElementById('set-med-max').value) || 12;
+    s.ownersList = document.getElementById('set-owners').value.split('\n').map(x=>x.trim()).filter(Boolean);
+    Store.save();
+    Toast.show('Settings saved');
+  },
+
+  importJSONFile(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      if (Store.importJSON(e.target.result)) {
+        Toast.show('Data imported successfully');
+        this.navigate(this.currentPage);
+      }
+    };
+    reader.readAsText(file);
+  },
+
+  confirmReset() {
+    Modal.open('Reset All Data',
+      '<p>This will delete all providers, findings, tasks, and settings and reseed with sample data. This cannot be undone.</p>',
+      '<button class="btn btn-outline" onclick="Modal.close()">Cancel</button><button class="btn btn-danger" onclick="Store.reset();Modal.close();Toast.show(\'Data reset\');App.navigate(\'dashboard\');">Reset</button>'
+    );
+  },
+};
+
+/* ===== INIT ===== */
+document.addEventListener('DOMContentLoaded', () => App.init());
+</script>
+</body>
+</html>

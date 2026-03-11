@@ -1,0 +1,2834 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HIA | Inspection Management System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pptxgenjs/3.12.0/pptxgen.bundle.js"></script>
+<style>
+:root {
+  --navy: #0C1F3F;
+  --navy-mid: #1A3560;
+  --navy-light: #2A4D85;
+  --gold: #B8963E;
+  --gold-light: #D4AF5A;
+  --cream: #F8F5F0;
+  --surface: #FFFFFF;
+  --surface-2: #F2F5F9;
+  --border: #D0D9E8;
+  --text: #0C1F3F;
+  --text-mid: #3A4F6E;
+  --text-light: #6B7E99;
+  --success: #1B6B45;
+  --success-bg: #E6F4EE;
+  --warning: #9B5B00;
+  --warning-bg: #FFF4E0;
+  --danger: #8B1A1A;
+  --danger-bg: #FDE8E8;
+  --info: #1A4A7A;
+  --info-bg: #E8F0FA;
+  --radius: 6px;
+  --shadow: 0 2px 8px rgba(12,31,63,0.1);
+  --shadow-lg: 0 8px 32px rgba(12,31,63,0.15);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Source Sans 3', sans-serif;
+  background: var(--cream);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* ── HEADER ── */
+.header {
+  background: var(--navy);
+  color: #fff;
+  padding: 0 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 64px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+}
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.header-logo {
+  width: 40px; height: 40px;
+  background: var(--gold);
+  border-radius: 4px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Libre Baskerville', serif;
+  font-size: 16px; font-weight: 700;
+  color: var(--navy);
+  letter-spacing: -0.5px;
+}
+.header-title {
+  font-family: 'Libre Baskerville', serif;
+  font-size: 16px; font-weight: 700;
+  letter-spacing: 0.3px;
+}
+.header-subtitle { font-size: 11px; color: #8FA8CC; letter-spacing: 0.5px; text-transform: uppercase; }
+.header-meta { font-size: 12px; color: #8FA8CC; text-align: right; }
+.header-meta strong { color: var(--gold-light); }
+
+/* ── PHASE STEPPER ── */
+.stepper {
+  background: var(--navy-mid);
+  padding: 0 32px;
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid var(--gold);
+}
+.step-btn {
+  padding: 10px 20px;
+  background: none; border: none;
+  color: #8FA8CC;
+  font-family: 'Source Sans 3', sans-serif;
+  font-size: 12px; font-weight: 600;
+  letter-spacing: 0.5px; text-transform: uppercase;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  transition: all 0.2s;
+  display: flex; align-items: center; gap: 7px;
+}
+.step-btn:hover { color: #fff; background: rgba(255,255,255,0.05); }
+.step-btn.active { color: var(--gold-light); border-bottom-color: var(--gold-light); }
+.step-btn.completed { color: #6DB87A; }
+.step-num {
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.15);
+  font-size: 10px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+}
+.step-btn.active .step-num { background: var(--gold); color: var(--navy); }
+.step-btn.completed .step-num { background: #2E7D52; color: #fff; }
+
+/* ── MAIN LAYOUT ── */
+.main { max-width: 1280px; margin: 0 auto; padding: 28px 32px 60px; }
+.phase { display: none; }
+.phase.active { display: block; }
+
+/* ── SECTION CARDS ── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow);
+}
+.card-header {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  margin-bottom: 18px;
+  padding-bottom: 14px;
+  border-bottom: 2px solid var(--surface-2);
+}
+.card-title {
+  font-family: 'Libre Baskerville', serif;
+  font-size: 15px; font-weight: 700;
+  color: var(--navy);
+  display: flex; align-items: center; gap: 8px;
+}
+.card-title .icon {
+  width: 28px; height: 28px;
+  background: var(--navy);
+  border-radius: 4px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+.card-desc { font-size: 13px; color: var(--text-light); margin-top: 3px; }
+
+/* ── FORM ELEMENTS ── */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.form-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+.form-group { display: flex; flex-direction: column; gap: 5px; }
+.form-group.span-2 { grid-column: span 2; }
+.form-group.span-3 { grid-column: span 3; }
+label {
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 0.6px; text-transform: uppercase;
+  color: var(--text-mid);
+}
+input[type="text"], input[type="date"], input[type="email"],
+select, textarea {
+  background: var(--surface-2);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 9px 12px;
+  font-family: 'Source Sans 3', sans-serif;
+  font-size: 13px; color: var(--text);
+  transition: border-color 0.2s;
+  width: 100%;
+}
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--navy-light);
+  background: #fff;
+}
+textarea { resize: vertical; min-height: 72px; }
+
+/* ── CHECKBOXES GRID ── */
+.checkbox-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 8px;
+}
+.checkbox-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px;
+  background: var(--surface-2);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.15s;
+  user-select: none;
+}
+.checkbox-item:hover { border-color: var(--navy-light); background: #EBF0F8; }
+.checkbox-item.checked { border-color: var(--navy); background: #E8F0FA; }
+.checkbox-item input[type="checkbox"] { display: none; }
+.checkbox-icon {
+  width: 18px; height: 18px;
+  border: 2px solid var(--border);
+  border-radius: 3px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.15s;
+  font-size: 11px;
+  color: #fff;
+}
+.checkbox-item.checked .checkbox-icon { background: var(--navy); border-color: var(--navy); }
+.checkbox-label { font-size: 13px; font-weight: 500; }
+
+/* ── BUTTONS ── */
+.btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 9px 18px;
+  border-radius: var(--radius);
+  border: none; cursor: pointer;
+  font-family: 'Source Sans 3', sans-serif;
+  font-size: 13px; font-weight: 600;
+  transition: all 0.2s;
+  text-decoration: none;
+}
+.btn-primary { background: var(--navy); color: #fff; }
+.btn-primary:hover { background: var(--navy-light); }
+.btn-gold { background: var(--gold); color: #fff; }
+.btn-gold:hover { background: var(--gold-light); }
+.btn-outline { background: transparent; color: var(--navy); border: 1.5px solid var(--navy); }
+.btn-outline:hover { background: var(--navy); color: #fff; }
+.btn-success { background: var(--success); color: #fff; }
+.btn-success:hover { background: #145235; }
+.btn-danger { background: var(--danger); color: #fff; }
+.btn-sm { padding: 5px 12px; font-size: 12px; }
+.btn-icon { width: 32px; height: 32px; padding: 0; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+.btn-group { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+
+/* ── RISK AREA TABS ── */
+.risk-tabs {
+  display: flex; gap: 4px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+.risk-tab {
+  padding: 7px 14px;
+  background: var(--surface-2);
+  border: 1.5px solid var(--border);
+  border-radius: 20px;
+  font-size: 12px; font-weight: 600;
+  cursor: pointer; transition: all 0.15s;
+  color: var(--text-mid);
+  display: flex; align-items: center; gap: 6px;
+}
+.risk-tab:hover { border-color: var(--navy-light); color: var(--navy); }
+.risk-tab.active { background: var(--navy); border-color: var(--navy); color: #fff; }
+.risk-tab .status-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--border); flex-shrink: 0;
+}
+.risk-tab.rated-S .status-dot { background: var(--success); }
+.risk-tab.rated-NI .status-dot { background: #E07B20; }
+.risk-tab.rated-U .status-dot { background: var(--danger); }
+.risk-tab.rated-NT .status-dot { background: #999; }
+
+/* ── SUBSECTION TABS ── */
+.subsection-tabs {
+  display: flex; gap: 0;
+  border-bottom: 2px solid var(--border);
+  margin-bottom: 20px;
+  overflow-x: auto;
+}
+.sub-tab {
+  padding: 8px 16px;
+  background: none; border: none;
+  font-family: 'Source Sans 3', sans-serif;
+  font-size: 12px; font-weight: 600;
+  color: var(--text-light);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+.sub-tab:hover { color: var(--navy); }
+.sub-tab.active { color: var(--navy); border-bottom-color: var(--gold); }
+
+/* ── CONTENT LISTS ── */
+.content-list { list-style: none; }
+.content-list li {
+  padding: 8px 12px 8px 32px;
+  position: relative;
+  border-bottom: 1px solid var(--surface-2);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.content-list li:last-child { border-bottom: none; }
+.content-list li::before {
+  content: '→';
+  position: absolute; left: 10px;
+  color: var(--gold);
+  font-weight: 700;
+}
+.content-list.red-flags li::before { content: '⚑'; color: var(--danger); }
+.content-list.checks li::before { content: '◈'; color: var(--navy-light); }
+
+/* ── RATING WIDGET ── */
+.rating-widget {
+  display: flex; gap: 6px; flex-wrap: wrap;
+}
+.rating-btn {
+  padding: 5px 14px;
+  border-radius: 20px;
+  border: 1.5px solid var(--border);
+  background: var(--surface-2);
+  font-size: 11px; font-weight: 700;
+  cursor: pointer; transition: all 0.15s;
+  letter-spacing: 0.3px;
+}
+.rating-btn:hover { border-color: var(--navy); }
+.rating-btn.sel-S { background: var(--success-bg); border-color: var(--success); color: var(--success); }
+.rating-btn.sel-NI { background: var(--warning-bg); border-color: var(--warning); color: var(--warning); }
+.rating-btn.sel-U { background: var(--danger-bg); border-color: var(--danger); color: var(--danger); }
+.rating-btn.sel-NT { background: #f0f0f0; border-color: #999; color: #666; }
+
+/* ── EVIDENCE CHECKLIST ── */
+.evidence-item {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--surface-2);
+}
+.evidence-item:last-child { border-bottom: none; }
+.evidence-status {
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 0.5px; text-transform: uppercase;
+  white-space: nowrap; margin-top: 1px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.ev-pending { background: var(--warning-bg); color: var(--warning); border: 1px solid #F0B060; }
+.ev-received { background: var(--success-bg); color: var(--success); border: 1px solid #6DB87A; }
+.ev-outstanding { background: var(--danger-bg); color: var(--danger); border: 1px solid #E08080; }
+
+/* ── SAMPLE TEST TABLE ── */
+.sample-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.sample-table th {
+  background: var(--navy);
+  color: #fff;
+  padding: 8px 12px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+.sample-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+.sample-table tr:hover td { background: var(--surface-2); }
+.sample-table input, .sample-table select { background: transparent; border: none; border-bottom: 1px dashed var(--border); border-radius: 0; padding: 2px 4px; font-size: 12px; width: 100%; }
+.sample-table input:focus, .sample-table select:focus { border-bottom-color: var(--navy); outline: none; }
+
+/* ── FINDINGS TABLE ── */
+.findings-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.findings-table th {
+  background: var(--navy); color: #fff;
+  padding: 10px 14px; text-align: left;
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 0.4px; text-transform: uppercase;
+}
+.findings-table td { padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+.findings-table tr:hover td { background: var(--surface-2); }
+.rating-badge {
+  padding: 2px 8px; border-radius: 12px;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.5px;
+  text-transform: uppercase; display: inline-block;
+}
+.badge-S { background: var(--success-bg); color: var(--success); }
+.badge-NI { background: var(--warning-bg); color: var(--warning); }
+.badge-U { background: var(--danger-bg); color: var(--danger); }
+.badge-NT { background: #f0f0f0; color: #666; }
+.badge-open { background: var(--warning-bg); color: var(--warning); }
+.badge-closed { background: var(--success-bg); color: var(--success); }
+.badge-inprogress { background: var(--info-bg); color: var(--info); }
+
+/* ── SIGNOFF BOX ── */
+.signoff-box {
+  border: 2px solid var(--gold);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  background: #FDFBF5;
+  position: relative;
+}
+.signoff-box::before {
+  content: 'OFFICIAL RECORD';
+  position: absolute; top: -10px; left: 16px;
+  background: #FDFBF5;
+  padding: 0 8px;
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--gold);
+  text-transform: uppercase;
+}
+
+/* ── ALERT BOXES ── */
+.alert {
+  padding: 12px 16px;
+  border-radius: var(--radius);
+  border-left: 4px solid;
+  margin-bottom: 14px;
+  font-size: 13px;
+}
+.alert-info { background: var(--info-bg); border-color: var(--info); color: var(--info); }
+.alert-warning { background: var(--warning-bg); border-color: var(--warning); color: var(--warning); }
+.alert-danger { background: var(--danger-bg); border-color: var(--danger); color: var(--danger); }
+.alert-success { background: var(--success-bg); border-color: var(--success); color: var(--success); }
+
+/* ── STATS ROW ── */
+.stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px; }
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  box-shadow: var(--shadow);
+}
+.stat-num { font-size: 28px; font-weight: 700; font-family: 'Libre Baskerville', serif; color: var(--navy); }
+.stat-label { font-size: 11px; color: var(--text-light); font-weight: 600; letter-spacing: 0.4px; text-transform: uppercase; margin-top: 3px; }
+
+/* ── PAGE TITLE ── */
+.page-title {
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid var(--border);
+  display: flex; align-items: flex-end; justify-content: space-between;
+}
+.page-title h2 {
+  font-family: 'Libre Baskerville', serif;
+  font-size: 22px; font-weight: 700;
+  color: var(--navy);
+}
+.page-title p { font-size: 13px; color: var(--text-light); margin-top: 4px; }
+
+/* ── REMEDIATION TRACKER ── */
+.rem-item {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow);
+}
+.rem-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+.rem-title { font-weight: 700; font-size: 14px; color: var(--navy); }
+.rem-meta { font-size: 11px; color: var(--text-light); margin-top: 2px; }
+.rem-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+
+/* ── EXPORT PANEL ── */
+.export-panel {
+  background: var(--navy);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 24px;
+}
+.export-panel p { color: #8FA8CC; font-size: 13px; }
+.export-panel h3 { color: #fff; font-family: 'Libre Baskerville', serif; font-size: 15px; }
+
+/* ── TOOLTIP ── */
+.assumption-flag {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: var(--warning-bg);
+  border: 1px solid #F0B060;
+  border-radius: 12px;
+  padding: 2px 8px;
+  font-size: 11px;
+  color: var(--warning);
+  font-weight: 600;
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--surface-2); }
+::-webkit-scrollbar-thumb { background: #B0BDD0; border-radius: 3px; }
+
+/* ── PROGRESS BAR ── */
+.progress-bar { height: 6px; background: var(--surface-2); border-radius: 3px; overflow: hidden; margin-top: 6px; }
+.progress-fill { height: 100%; background: var(--navy-light); border-radius: 3px; transition: width 0.3s; }
+
+/* ── DIVIDER ── */
+.divider { border: none; border-top: 1px solid var(--border); margin: 18px 0; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 768px) {
+  .main { padding: 16px; }
+  .form-grid, .form-grid-3 { grid-template-columns: 1fr; }
+  .stats-row { grid-template-columns: 1fr 1fr; }
+  .rem-grid { grid-template-columns: 1fr; }
+}
+
+/* ── PRINT STYLES ── */
+@media print {
+  .header, .stepper, .btn-group, .export-panel { display: none; }
+  .phase { display: block !important; }
+}
+
+/* Animations */
+.phase.active { animation: fadeIn 0.2s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+.toast {
+  position: fixed; bottom: 24px; right: 24px;
+  background: var(--navy); color: #fff;
+  padding: 12px 20px; border-radius: var(--radius);
+  font-size: 13px; font-weight: 600;
+  box-shadow: var(--shadow-lg);
+  z-index: 9999;
+  animation: slideUp 0.3s ease;
+  display: flex; align-items: center; gap: 8px;
+}
+.toast.success { background: var(--success); }
+.toast.error { background: var(--danger); }
+@keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+.badge-priority-high { background: var(--danger-bg); color: var(--danger); padding: 2px 7px; border-radius: 10px; font-size: 10px; font-weight: 700; }
+.badge-priority-medium { background: var(--warning-bg); color: var(--warning); padding: 2px 7px; border-radius: 10px; font-size: 10px; font-weight: 700; }
+.badge-priority-low { background: var(--info-bg); color: var(--info); padding: 2px 7px; border-radius: 10px; font-size: 10px; font-weight: 700; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-brand">
+    <div class="header-logo">HIA</div>
+    <div>
+      <div class="header-title">Health Insurance Audit</div>
+      <div class="header-subtitle">Inspection Management System</div>
+    </div>
+  </div>
+  <div class="header-meta">
+    <div id="headerInspInfo">No inspection loaded</div>
+    <div id="headerDate" style="font-size:11px;color:#6B7E99;"></div>
+  </div>
+</div>
+
+<!-- PHASE STEPPER -->
+<div class="stepper">
+  <button class="step-btn active" data-phase="1" onclick="gotoPhase(1)">
+    <span class="step-num">1</span> Planning & Setup
+  </button>
+  <button class="step-btn" data-phase="2" onclick="gotoPhase(2)">
+    <span class="step-num">2</span> Execution & Testing
+  </button>
+  <button class="step-btn" data-phase="3" onclick="gotoPhase(3)">
+    <span class="step-num">3</span> Findings & Evidence
+  </button>
+  <button class="step-btn" data-phase="4" onclick="gotoPhase(4)">
+    <span class="step-num">4</span> Remediation & Sign-off
+  </button>
+  <button class="step-btn" data-phase="5" onclick="gotoPhase(5)">
+    <span class="step-num">5</span> Export Reports
+  </button>
+</div>
+
+<div class="main">
+
+<!-- ═══════════════════════════════════════════════════
+     PHASE 1 – PLANNING & SETUP
+═══════════════════════════════════════════════════ -->
+<div class="phase active" id="phase1">
+  <div class="page-title">
+    <div>
+      <h2>📋 Inspection Planning & Setup</h2>
+      <p>Define the inspection scope, team, and risk focus areas before commencement</p>
+    </div>
+    <button class="btn btn-primary" onclick="saveSetup()">Save & Proceed to Execution →</button>
+  </div>
+
+  <!-- Inspection Details -->
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <div class="card-title"><span class="icon">🏢</span> Insurer & Inspection Details</div>
+        <div class="card-desc">Core identification information for this regulatory inspection</div>
+      </div>
+      <span class="assumption-flag">⚠ Confirm all details on-site</span>
+    </div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Regulated Entity (Insurer) Name</label>
+        <input type="text" id="insurerName" placeholder="e.g. Vhi Healthcare DAC" />
+      </div>
+      <div class="form-group">
+        <label>Authorisation / Registration Number</label>
+        <input type="text" id="regNumber" placeholder="e.g. HIA-REG-001" />
+      </div>
+      <div class="form-group">
+        <label>Inspection Type</label>
+        <select id="inspectionType">
+          <option value="">— Select —</option>
+          <option>Full-Scope Risk-Based Inspection</option>
+          <option>Thematic Inspection</option>
+          <option>Follow-Up / Validation Inspection</option>
+          <option>Desk-Based Review</option>
+          <option>Mystery Shopping / Market Conduct</option>
+          <option>IT & Systems Audit</option>
+          <option>Targeted Supervisory Visit</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Period Under Review</label>
+        <input type="text" id="reviewPeriod" placeholder="e.g. 01 Jan 2023 – 31 Dec 2024" />
+      </div>
+      <div class="form-group">
+        <label>Inspection Start Date</label>
+        <input type="date" id="inspStartDate" />
+      </div>
+      <div class="form-group">
+        <label>Inspection End Date (Expected)</label>
+        <input type="date" id="inspEndDate" />
+      </div>
+      <div class="form-group">
+        <label>HIA Lead Inspector</label>
+        <input type="text" id="leadInspector" placeholder="Full name" />
+      </div>
+      <div class="form-group">
+        <label>HIA Supporting Inspector(s)</label>
+        <input type="text" id="supportingInspectors" placeholder="Comma-separated names" />
+      </div>
+      <div class="form-group">
+        <label>Insurer Primary Contact Name</label>
+        <input type="text" id="insurerContact" placeholder="Full name & title" />
+      </div>
+      <div class="form-group">
+        <label>Insurer Contact Email</label>
+        <input type="email" id="insurerEmail" placeholder="email@insurer.ie" />
+      </div>
+    </div>
+  </div>
+
+  <!-- Prior Flags -->
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <div class="card-title"><span class="icon">🚩</span> Previous Risk Flags / Prior Findings</div>
+        <div class="card-desc">Document any outstanding findings from previous inspections or supervisory letters</div>
+      </div>
+    </div>
+    <div class="form-group" style="margin-bottom:12px;">
+      <label>Prior Inspection Reference (if applicable)</label>
+      <input type="text" id="priorRef" placeholder="Reference number or N/A" value="No prior flags provided" />
+    </div>
+    <div class="form-group">
+      <label>Outstanding / Carry-Over Findings</label>
+      <textarea id="priorFindings" placeholder="Describe any prior findings or flags. Leave blank if none.">No prior flags provided – confirm with supervisory file on-site</textarea>
+    </div>
+    <div class="alert alert-info" style="margin-top:12px;">
+      ℹ <strong>Assumption to Confirm:</strong> No prior risk flags have been provided. The inspection team should review the HIA supervisory file and any prior correspondence before or upon arrival.
+    </div>
+  </div>
+
+  <!-- Risk Focus Areas -->
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <div class="card-title"><span class="icon">🎯</span> Risk Focus Areas</div>
+        <div class="card-desc">Select all areas to be included in this inspection scope</div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-sm btn-outline" onclick="selectAllRisks()">Select All</button>
+        <button class="btn btn-sm btn-outline" onclick="clearAllRisks()">Clear</button>
+      </div>
+    </div>
+    <div class="checkbox-grid" id="riskAreaGrid">
+      <!-- populated by JS -->
+    </div>
+  </div>
+
+  <!-- Risk Appetite & Inspection Rationale -->
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <div class="card-title"><span class="icon">📊</span> Inspection Rationale & Objectives</div>
+        <div class="card-desc">Document the supervisory rationale for this inspection</div>
+      </div>
+    </div>
+    <div class="form-grid">
+      <div class="form-group span-2">
+        <label>Overall Inspection Rationale</label>
+        <textarea id="inspRationale" placeholder="e.g. Triggered by increased complaints data, thematic concern re. Risk Equalisation reporting accuracy, or scheduled risk-based cycle..."></textarea>
+      </div>
+      <div class="form-group">
+        <label>Primary Consumer Protection Concern</label>
+        <textarea id="consumerConcern" placeholder="Describe the key consumer outcome risk driving this inspection..." style="min-height:60px;"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Market Integrity Concern</label>
+        <textarea id="marketConcern" placeholder="Describe any systemic or market-level risk..." style="min-height:60px;"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Inherent Risk Rating (Pre-Inspection)</label>
+        <select id="inherentRisk">
+          <option value="">— Select —</option>
+          <option>Low</option>
+          <option>Medium</option>
+          <option>High</option>
+          <option>Critical</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Inspection Sensitivity / Confidentiality</label>
+        <select id="sensitivity">
+          <option>Standard – Restricted to HIA</option>
+          <option>Sensitive – Lead Inspector Only</option>
+          <option>Market Sensitive</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="btn-group" style="justify-content:flex-end;">
+    <button class="btn btn-primary" onclick="saveSetup()">Save Setup & Proceed to Execution →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     PHASE 2 – EXECUTION & TESTING
+═══════════════════════════════════════════════════ -->
+<div class="phase" id="phase2">
+  <div class="page-title">
+    <div>
+      <h2>🔍 Execution & Testing</h2>
+      <p id="phase2Subtitle">Complete controls assessment, walkthroughs and evidence collection for each risk area</p>
+    </div>
+    <div class="btn-group">
+      <button class="btn btn-outline" onclick="gotoPhase(1)">← Back</button>
+      <button class="btn btn-primary" onclick="gotoPhase(3)">Proceed to Findings →</button>
+    </div>
+  </div>
+
+  <div class="risk-tabs" id="riskAreaTabs"></div>
+
+  <div id="riskAreaContent">
+    <div class="alert alert-info">Select a risk area tab above to begin the inspection assessment.</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     PHASE 3 – FINDINGS & EVIDENCE
+═══════════════════════════════════════════════════ -->
+<div class="phase" id="phase3">
+  <div class="page-title">
+    <div>
+      <h2>📁 Findings & Evidence Log</h2>
+      <p>Consolidated summary of all inspection findings and evidence status</p>
+    </div>
+    <div class="btn-group">
+      <button class="btn btn-outline" onclick="gotoPhase(2)">← Back</button>
+      <button class="btn btn-primary" onclick="gotoPhase(4)">Proceed to Remediation →</button>
+    </div>
+  </div>
+
+  <div class="stats-row" id="findingsStats"></div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title"><span class="icon">📊</span> Overall Inspection Assessment</div>
+    </div>
+    <div class="form-grid">
+      <div class="form-group span-2">
+        <label>Overall Control Environment Rating</label>
+        <select id="overallRating">
+          <option value="">— Select overall rating —</option>
+          <option>Satisfactory</option>
+          <option>Needs Improvement</option>
+          <option>Unsatisfactory</option>
+          <option>Substantially Unsatisfactory</option>
+        </select>
+      </div>
+      <div class="form-group span-2">
+        <label>Executive Summary of Findings</label>
+        <textarea id="execSummary" style="min-height:100px;" placeholder="Summarise the key findings, themes and overall assessment..."></textarea>
+      </div>
+      <div class="form-group span-2">
+        <label>Key Themes Identified</label>
+        <textarea id="keyThemes" placeholder="List recurring themes or systemic issues observed..."></textarea>
+      </div>
+      <div class="form-group">
+        <label>Consumer Detriment Identified?</label>
+        <select id="consumerDetriment">
+          <option>No consumer detriment identified</option>
+          <option>Potential detriment – monitoring required</option>
+          <option>Actual detriment identified</option>
+          <option>Significant detriment – escalate</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Regulatory Referral Required?</label>
+        <select id="regulatoryReferral">
+          <option>No</option>
+          <option>Under consideration</option>
+          <option>Yes – refer to Enforcement</option>
+          <option>Yes – notify Minister / DoH</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title"><span class="icon">📋</span> Findings by Risk Area</div>
+    </div>
+    <table class="findings-table" id="findingsSummaryTable">
+      <thead>
+        <tr>
+          <th>Risk Area</th>
+          <th>Rating</th>
+          <th>Key Finding</th>
+          <th>Red Flags</th>
+          <th>Evidence</th>
+          <th>Action Required</th>
+        </tr>
+      </thead>
+      <tbody id="findingsSummaryBody"></tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title"><span class="icon">📎</span> Evidence Master Log</div>
+    </div>
+    <div id="evidenceMasterLog"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     PHASE 4 – REMEDIATION & SIGN-OFF
+═══════════════════════════════════════════════════ -->
+<div class="phase" id="phase4">
+  <div class="page-title">
+    <div>
+      <h2>✅ Remediation Tracking & Sign-Off</h2>
+      <p>Record, track and formally close remediation actions arising from inspection findings</p>
+    </div>
+    <div class="btn-group">
+      <button class="btn btn-outline" onclick="gotoPhase(3)">← Back</button>
+      <button class="btn btn-primary" onclick="gotoPhase(5)">Proceed to Export →</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title"><span class="icon">➕</span> Add Remediation Action</div>
+    </div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Related Risk Area</label>
+        <select id="remRiskArea" style="width:100%;"></select>
+      </div>
+      <div class="form-group">
+        <label>Finding Reference</label>
+        <input type="text" id="remRef" placeholder="e.g. GOV-01, CLM-02" />
+      </div>
+      <div class="form-group span-2">
+        <label>Finding Description</label>
+        <textarea id="remFinding" style="min-height:56px;" placeholder="Describe the finding requiring remediation..."></textarea>
+      </div>
+      <div class="form-group span-2">
+        <label>Required Remediation Action</label>
+        <textarea id="remAction" style="min-height:56px;" placeholder="Describe what the firm must do to remediate..."></textarea>
+      </div>
+      <div class="form-group">
+        <label>Priority</label>
+        <select id="remPriority">
+          <option>High – Immediate (within 1 month)</option>
+          <option>Medium – Short-term (within 3 months)</option>
+          <option>Low – Medium-term (within 6 months)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Deadline Date</label>
+        <input type="date" id="remDeadline" />
+      </div>
+      <div class="form-group">
+        <label>Firm Responsible Owner</label>
+        <input type="text" id="remOwner" placeholder="Name / Title" />
+      </div>
+      <div class="form-group">
+        <label>HIA Monitoring Officer</label>
+        <input type="text" id="remHIAOfficer" placeholder="HIA inspector responsible" />
+      </div>
+    </div>
+    <div style="text-align:right;margin-top:10px;">
+      <button class="btn btn-primary" onclick="addRemediation()">+ Add Remediation Action</button>
+    </div>
+  </div>
+
+  <div id="remediationList"></div>
+
+  <!-- Formal Sign-off -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title"><span class="icon">✍</span> Formal Inspection Sign-Off</div>
+    </div>
+    <div class="signoff-box">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Lead Inspector Name</label>
+          <input type="text" id="signLead" placeholder="Full name" />
+        </div>
+        <div class="form-group">
+          <label>Lead Inspector Signature Reference</label>
+          <input type="text" id="signLeadRef" placeholder="e.g. digital ref / employee ID" />
+        </div>
+        <div class="form-group">
+          <label>Sign-Off Date</label>
+          <input type="date" id="signDate" />
+        </div>
+        <div class="form-group">
+          <label>HIA Authorising Officer</label>
+          <input type="text" id="signAuth" placeholder="Name / Title" />
+        </div>
+        <div class="form-group span-2">
+          <label>Inspection Conclusion Statement</label>
+          <textarea id="signConclusion" style="min-height:80px;" placeholder="Formal conclusion statement to appear in report..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>Insurer Acknowledgement Received?</label>
+          <select id="signInsAck">
+            <option>Pending</option>
+            <option>Received – Letter on File</option>
+            <option>Received – Email Acknowledged</option>
+            <option>Disputed – See Notes</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Insurer Representative Acknowledging</label>
+          <input type="text" id="signInsRep" placeholder="Name / Title" />
+        </div>
+        <div class="form-group">
+          <label>Insurer Acknowledgement Date</label>
+          <input type="date" id="signInsDate" />
+        </div>
+        <div class="form-group">
+          <label>Report Classification</label>
+          <select id="signClass">
+            <option>Restricted – HIA Internal</option>
+            <option>Confidential – Shared with Entity</option>
+            <option>Privileged – Legal Review Required</option>
+          </select>
+        </div>
+        <div class="form-group span-2">
+          <label>Notes / Caveats</label>
+          <textarea id="signNotes" placeholder="Any caveats, disagreements or additional notes..."></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     PHASE 5 – EXPORT
+═══════════════════════════════════════════════════ -->
+<div class="phase" id="phase5">
+  <div class="page-title">
+    <div>
+      <h2>📤 Export Inspection Reports</h2>
+      <p>Generate the formal inspection report (PDF) and executive slide deck (PowerPoint)</p>
+    </div>
+    <button class="btn btn-outline" onclick="gotoPhase(4)">← Back</button>
+  </div>
+
+  <div class="stats-row" id="exportStats"></div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title"><span class="icon">📄</span> PDF Inspection Report</div>
+    </div>
+    <div class="alert alert-info" style="margin-bottom:14px;">
+      The PDF report includes all phases: inspection details, findings by risk area, evidence log, remediation tracker and formal sign-off. It is formatted to HIA report standards.
+    </div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Include in Report</label>
+        <div style="display:flex;flex-direction:column;gap:6px;margin-top:4px;">
+          <label style="text-transform:none;letter-spacing:0;font-size:13px;display:flex;align-items:center;gap:8px;">
+            <input type="checkbox" id="pdfIncludeExec" checked> Executive Summary</label>
+          <label style="text-transform:none;letter-spacing:0;font-size:13px;display:flex;align-items:center;gap:8px;">
+            <input type="checkbox" id="pdfIncludeDetail" checked> Detailed Findings per Risk Area</label>
+          <label style="text-transform:none;letter-spacing:0;font-size:13px;display:flex;align-items:center;gap:8px;">
+            <input type="checkbox" id="pdfIncludeEvidence" checked> Evidence Log</label>
+          <label style="text-transform:none;letter-spacing:0;font-size:13px;display:flex;align-items:center;gap:8px;">
+            <input type="checkbox" id="pdfIncludeRemediation" checked> Remediation Action Plan</label>
+          <label style="text-transform:none;letter-spacing:0;font-size:13px;display:flex;align-items:center;gap:8px;">
+            <input type="checkbox" id="pdfIncludeSignoff" checked> Sign-Off Record</label>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Report Version</label>
+        <select id="pdfVersion">
+          <option>Draft – For Discussion</option>
+          <option>Final – For Issue</option>
+          <option>Confidential – Legal Privilege</option>
+        </select>
+      </div>
+    </div>
+    <div style="margin-top:16px;">
+      <button class="btn btn-gold" onclick="generatePDF()" style="font-size:14px;padding:11px 24px;">
+        ⬇ Generate & Save PDF Report
+      </button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title"><span class="icon">📊</span> PowerPoint Executive Slide Deck</div>
+    </div>
+    <div class="alert alert-info" style="margin-bottom:14px;">
+      The slide deck provides an executive summary suitable for presentation to the HIA Board, Management Committee or the regulated entity's Board. Includes risk heatmap, findings summary and remediation timeline.
+    </div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Intended Audience</label>
+        <select id="pptAudience">
+          <option>HIA Internal – Supervisory Team</option>
+          <option>HIA Management Committee</option>
+          <option>HIA Board</option>
+          <option>Regulated Entity – Senior Management</option>
+          <option>Regulated Entity – Board</option>
+          <option>Department of Health</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Presentation Date</label>
+        <input type="date" id="pptDate" />
+      </div>
+      <div class="form-group span-2">
+        <label>Presenter Name(s)</label>
+        <input type="text" id="pptPresenter" placeholder="Lead Inspector / Supervisory Manager" />
+      </div>
+    </div>
+    <div style="margin-top:16px;">
+      <button class="btn btn-primary" onclick="generatePPTX()" style="font-size:14px;padding:11px 24px;">
+        ⬇ Generate & Save PowerPoint Deck
+      </button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title"><span class="icon">💾</span> Save Session Data</div>
+    </div>
+    <p style="font-size:13px;color:var(--text-light);margin-bottom:14px;">Save your inspection session to your browser's local storage for later retrieval, or export the raw JSON data.</p>
+    <div class="btn-group">
+      <button class="btn btn-outline" onclick="saveSession()">💾 Save to Browser</button>
+      <button class="btn btn-outline" onclick="loadSession()">📂 Load Saved Session</button>
+      <button class="btn btn-outline" onclick="exportJSON()">📤 Export JSON Data</button>
+    </div>
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<script>
+// ╔══════════════════════════════════════════════════════════╗
+// ║  HIA INSPECTION MANAGEMENT SYSTEM – APPLICATION LOGIC   ║
+// ╚══════════════════════════════════════════════════════════╝
+
+const TODAY = new Date().toLocaleDateString('en-IE', {day:'2-digit',month:'long',year:'numeric'});
+document.getElementById('headerDate').textContent = 'Session date: ' + TODAY;
+
+// ── RISK AREA DEFINITIONS ────────────────────────────────────
+const RISK_AREAS = [
+  {
+    id: 'GOV', name: 'Governance & Board Oversight', icon: '🏛',
+    objective: 'Assess the adequacy of the Board\'s oversight framework, governance structures, risk management processes and cultural tone from the top, ensuring the insurer operates with appropriate accountability, transparency and independence in its decision-making, consistent with HIA regulatory expectations and the Health Insurance Acts.',
+    keyControls: [
+      'Board-approved Governance Framework including Terms of Reference for all sub-committees',
+      'Board Risk Appetite Statement (RAS) reviewed and approved at least annually',
+      'Independent Non-Executive Director (INED) representation – minimum one-third of Board',
+      'Board Information Pack (BIP) distributed in advance with sufficient quality management information (MI)',
+      'Conflicts of interest policy and register maintained and disclosed to Board',
+      'Board succession plan and skills matrix reviewed annually',
+      'CEO/CFO accountability structure with clear reporting lines to Board',
+      'Annual Board effectiveness review conducted and acted upon',
+      'Regulatory change log maintained and escalated to Board/Risk Committee',
+      'Whistleblowing policy in place, communicated and Board-owned'
+    ],
+    walkthroughQuestions: [
+      'Please walk us through the Board composition – how is independence assessed and documented?',
+      'How does the Board satisfy itself that risk appetite is being adhered to at an operational level?',
+      'What governance changes were made during the period under review and what Board approvals were obtained?',
+      'How are material regulatory developments communicated to the Board, and in what timeframe?',
+      'Can you describe the Board\'s oversight of consumer protection obligations?',
+      'How does the Board hold management to account where metrics fall outside risk appetite?',
+      'What is the Board\'s visibility on complaints data and how is it escalated?',
+      'Who is the Board-level individual with responsibility for compliance and regulatory matters?',
+      'How are Related Party Transactions reviewed and approved at Board level?',
+      'Describe the Board\'s engagement with the actuary, auditor and compliance function.'
+    ],
+    evidenceRequests: [
+      'Board meeting minutes for the full period under review (all meetings)',
+      'Risk Committee and Audit Committee minutes',
+      'Board Information Pack (BIP) for last 3 board meetings',
+      'Board-approved Terms of Reference for all sub-committees',
+      'Current Board skills matrix and succession plan',
+      'Conflicts of interest register and disclosure records',
+      'Board Risk Appetite Statement (most recent version)',
+      'Annual Board effectiveness review report',
+      'Whistleblowing policy and log of reports received',
+      'Regulatory change management log',
+      'CRO / Head of Compliance reporting to Board – last 12 months'
+    ],
+    sampleTests: [
+      { test: 'Minutes Review', desc: 'Review 100% of board minutes for the period – assess quality of MI, challenge evident, quorum compliance' },
+      { test: 'Director Independence', desc: 'Verify INED status and independence declarations for all non-executive directors' },
+      { test: 'RAS Adherence', desc: 'Select 3 key risk metrics from RAS – trace reported performance against limits over period' },
+      { test: 'Conflicts Register', desc: 'Compare conflicts register to company structure/shareholding – assess completeness' },
+      { test: 'BIP Quality', desc: 'Assess BIP for last meeting: timeliness, completeness, exception reporting' }
+    ],
+    redFlags: [
+      'Board dominated by executive directors or founding shareholders – insufficient independence',
+      'Minutes are brief, formulaic, or show no evidence of challenge or debate',
+      'Risk Appetite Statement not reviewed or approved during the period',
+      'Governance Committee Terms of Reference outdated or not approved',
+      'Conflicts of interest not disclosed or register not maintained',
+      'Regulatory matters not appearing as standing Board agenda item',
+      'Consumer complaints / outcomes data not presented to Board',
+      'Whistleblowing reports not escalated to Board/Audit Committee',
+      'Board effectiveness review not conducted or no follow-up on outcomes',
+      'Material regulatory change not communicated to Board within 1 month'
+    ],
+    remCtrl: 'Firm must update Board Terms of Reference within 60 days. Board must formally review and approve Risk Appetite Statement. All conflicts of interest must be logged and disclosed. Evidence of remediation must be submitted to HIA within 90 days of report issue. Board minutes must demonstrate substantive engagement, challenge and oversight going forward.',
+    remMon: 'HIA to monitor via quarterly management information returns and supervisory engagement. Inspection follow-up visit to validate governance improvements within 12 months. Board minutes to be submitted to HIA on request for ongoing supervisory monitoring. Flag for thematic review of governance across market if systemic weakness identified.'
+  },
+  {
+    id: 'REQ', name: 'Risk Equalisation Reporting', icon: '⚖',
+    objective: 'Verify the accuracy, completeness and timeliness of Risk Equalisation (RE) returns submitted to the HIA, including data quality of claims profiles, insured populations and hospital utilisation data used in the RE Credit/Levy calculations. Ensure the RE mechanism is not being distorted through misreporting or gaming.',
+    keyControls: [
+      'Documented RE data extraction and reconciliation process signed off by CFO/Actuary',
+      'Independent validation of RE returns by Chief Actuary before submission',
+      'System-generated controls reconciling membership data to RE return figures',
+      'Process for identifying and correcting RE return errors prior to submission',
+      'RE return submission log with dates, approvals and version control',
+      'Change log for any adjustments to RE data assumptions or classification',
+      'Quarterly RE reconciliation between policy admin system and actuarial data',
+      'Board / Risk Committee review of RE exposure and financial impact',
+      'Training records for staff responsible for RE data extraction and reporting'
+    ],
+    walkthroughQuestions: [
+      'Walk us through the end-to-end process for compiling the RE return from source data to submission.',
+      'Who reviews and approves the RE return before submission to HIA?',
+      'How are classification decisions made for members at category boundaries (age, gender, claim type)?',
+      'What system controls exist to prevent duplicate or erroneous records entering the RE calculation?',
+      'How are material corrections to prior RE returns identified, assessed and communicated to HIA?',
+      'How is inpatient vs. day-case classification validated against hospital data?',
+      'Describe the actuarial review process and sign-off for RE returns.',
+      'Have there been any known classification or data quality issues during the period?'
+    ],
+    evidenceRequests: [
+      'All RE return submissions for the period under review with submission dates',
+      'RE data reconciliation reports (policy admin system to RE submission)',
+      'Chief Actuary sign-off records for each RE return',
+      'Sample of individual member records used in RE calculation (anonymised)',
+      'Any material adjustment or restatement of prior RE returns',
+      'System-generated membership count reconciliation reports',
+      'Training records for RE reporting staff',
+      'RE return submission governance sign-off documentation'
+    ],
+    sampleTests: [
+      { test: 'Member Count Reconciliation', desc: 'Select 2 RE return periods – reconcile submitted member count to policy admin system extract' },
+      { test: 'Claims Classification', desc: 'Sample 30 inpatient claims – verify classification (inpatient/day case) against hospital discharge data' },
+      { test: 'New Member Reporting', desc: 'Select 20 new members joined during period – verify correct inclusion in RE returns from effective date' },
+      { test: 'Lapsed Member Reporting', desc: 'Select 20 lapsed/cancelled policies – verify timely removal from RE returns' },
+      { test: 'Age/Gender Banding', desc: 'Sample 15 members near age-band boundaries – verify correct band assignment' }
+    ],
+    redFlags: [
+      'RE returns submitted after statutory deadline without prior notification to HIA',
+      'Actuary sign-off obtained post-submission or not documented',
+      'Material discrepancies between submitted RE figures and policy admin system records',
+      'Frequent corrections or restatements of prior RE returns without root cause analysis',
+      'Classification of claims at or near boundaries lacks documented decision rationale',
+      'No system-based reconciliation controls – process relies solely on manual checks',
+      'Staff responsible for RE reporting have not received dedicated training',
+      'RE return governance not approved at CFO or Board level',
+      'Hospital utilisation data not independently validated against hospital records',
+      'Evidence of systematic over/under-reporting of specific member categories'
+    ],
+    remCtrl: 'Firm must implement automated system controls to reconcile policy admin data to RE returns before each submission. Chief Actuary sign-off must be evidenced in writing prior to each submission. Any identified misreporting must be notified to HIA promptly and corrected via formal restatement. Training programme for RE staff must be documented and completed within 90 days.',
+    remMon: 'HIA to conduct data analytics comparison of RE submissions against market peers on an ongoing basis. Enhanced supervisory monitoring of RE returns for at least 4 subsequent quarters. Any further discrepancies to trigger immediate escalation. Systemic RE reporting failures to be referred for enforcement assessment.'
+  },
+  {
+    id: 'IT', name: 'IT & Change Management', icon: '💻',
+    objective: 'Assess the adequacy of IT governance, information security controls, change management processes and technology risk oversight. Evaluate whether IT risks are identified, managed and reported with appropriate rigour and whether changes to systems impacting regulatory obligations are appropriately controlled and tested.',
+    keyControls: [
+      'IT Governance Framework including Board-approved IT Strategy',
+      'Formal change management process with documented testing, approval and rollback capability',
+      'Information Security Management System (ISMS) aligned to ISO 27001 or equivalent',
+      'Access management controls – Privileged Access Management (PAM), Joiner-Mover-Leaver (JML) process',
+      'Patch management policy with defined SLAs and compliance monitoring',
+      'Data classification policy and data inventory (including personal data under GDPR)',
+      'Cyber incident response plan tested annually',
+      'Third-party IT service provider oversight including SLA monitoring',
+      'Business Continuity Plan (BCP) and IT Disaster Recovery (DR) plans tested annually',
+      'IT audit programme with independent review of controls'
+    ],
+    walkthroughQuestions: [
+      'Describe the change management lifecycle from request to deployment – who can approve changes to regulatory-critical systems?',
+      'How are emergency changes controlled and documented?',
+      'Walk us through the process for granting, reviewing and revoking privileged access.',
+      'How is cyber risk reported to the Board and Risk Committee?',
+      'When was the last penetration test conducted and what were the key findings?',
+      'How are regulatory data requirements (RE reporting, returns) embedded in IT system change processes?',
+      'Describe your approach to managing software vulnerabilities and patching.',
+      'What IT systems are considered critical to regulatory obligations and how are they protected?'
+    ],
+    evidenceRequests: [
+      'IT Governance Framework and Board-approved IT Strategy',
+      'Change management policy and change log for the period under review',
+      'Access review reports – PAM and JML process (last 12 months)',
+      'Penetration test report (most recent)',
+      'Patch management compliance reports for the period',
+      'Cyber incident log for the period under review',
+      'BCP and IT DR test reports (last 2 years)',
+      'IT audit reports for the period',
+      'ISMS certification (ISO 27001 or equivalent) if applicable',
+      'IT risk register entries for the period'
+    ],
+    sampleTests: [
+      { test: 'Change Log Review', desc: 'Sample 10 system changes to regulatory-critical systems – verify approvals, test evidence, rollback plans' },
+      { test: 'Access Rights Audit', desc: 'Select 5 leavers in period – verify timely access revocation across all systems' },
+      { test: 'Privileged Access', desc: 'Review privileged access list – verify business justification for each account and last review date' },
+      { test: 'Patch Compliance', desc: 'Review critical patch deployment statistics for the period – assess compliance with SLA' },
+      { test: 'Incident Response', desc: 'Trace 2 cyber incidents from log through to closure – verify notification and escalation compliance' }
+    ],
+    redFlags: [
+      'Changes to regulatory reporting systems deployed without formal testing or approval',
+      'Privileged access accounts not reviewed in over 6 months',
+      'Former employees retaining system access after departure',
+      'No penetration testing conducted in over 12 months',
+      'Critical security patches not applied within defined SLA timescales',
+      'Cyber incidents not logged, investigated or escalated appropriately',
+      'IT DR plan not tested or last test identified material failings not yet remediated',
+      'IT risk not reported to Board or Risk Committee as standing item',
+      'Significant IT changes implemented without regulatory impact assessment',
+      'No documented emergency change process – informal workarounds prevalent'
+    ],
+    remCtrl: 'All changes to regulatory systems must follow the formal change management process without exception. PAM and JML processes must be reviewed and evidenced within 60 days. Penetration testing must be scheduled and completed within 90 days. All outstanding critical patches must be applied within 30 days with formal sign-off. Regulatory impact assessments must be embedded in the change approval process.',
+    remMon: 'HIA to request quarterly IT risk metrics including patch compliance, access review completion rates, and change success rates for regulatory systems. Cyber incident notifications must be provided to HIA within 72 hours of detection per regulatory requirements. IT audit reports to be shared with HIA annually.'
+  },
+  {
+    id: 'OR', name: 'Operational Resilience', icon: '🛡',
+    objective: 'Assess the insurer\'s capability to withstand, adapt to and recover from operational disruptions, ensuring continuity of critical services to policyholders and uninterrupted discharge of regulatory obligations. Evaluate the maturity of business continuity planning, crisis management and third-party resilience arrangements.',
+    keyControls: [
+      'Board-approved Operational Resilience Policy with defined impact tolerances',
+      'Mapping of critical business services and their dependencies',
+      'Business Continuity Plans (BCPs) for all critical services, tested annually',
+      'Crisis Management Framework with documented escalation procedures',
+      'Third-party resilience requirements embedded in outsourcing contracts',
+      'Scenario-based resilience testing (including severe but plausible scenarios)',
+      'Operational incident management framework with root cause analysis process',
+      'Recovery Time Objectives (RTOs) and Recovery Point Objectives (RPOs) defined and tested',
+      'Staff cross-training and key person risk mitigation plans',
+      'Annual Board review of operational resilience framework'
+    ],
+    walkthroughQuestions: [
+      'Identify your firm\'s critical business services for policyholders – how were these identified?',
+      'What are your defined impact tolerances for each critical service?',
+      'Describe the most significant operational disruption during the period – how was it managed?',
+      'How are third-party providers included in resilience testing?',
+      'When was your BCP last tested and what were the outcomes?',
+      'How do you ensure policyholder services (claims, renewals) continue during a disruption?',
+      'How is operational resilience reported to the Board?',
+      'What severe scenarios have you stress-tested your resilience against?'
+    ],
+    evidenceRequests: [
+      'Operational Resilience Policy (Board-approved)',
+      'Critical business service mapping documentation',
+      'BCP test reports for the period under review',
+      'Crisis management plan and activation records (if invoked)',
+      'Operational incident log and root cause analysis reports',
+      'Resilience scenario testing results',
+      'RTOs and RPOs documentation with latest test outcomes',
+      'Third-party resilience clauses from key outsourcing contracts',
+      'Staff cross-training records for critical roles'
+    ],
+    sampleTests: [
+      { test: 'Incident Log Review', desc: 'Review all operational incidents in period – verify root cause analysis, escalation and recurrence prevention' },
+      { test: 'BCP Test Verification', desc: 'Review BCP test reports – verify critical services covered, RTO/RPO achieved, findings remediated' },
+      { test: 'Third-Party Resilience', desc: 'Select 3 key third parties – review contract resilience clauses and evidence of testing' },
+      { test: 'Staff Dependencies', desc: 'Identify 5 critical roles – verify documented backup/cross-training arrangements exist' },
+      { test: 'Impact Tolerance Test', desc: 'Assess if published impact tolerances were breached during any incident in period' }
+    ],
+    redFlags: [
+      'No defined or Board-approved impact tolerances for critical services',
+      'BCP not tested in over 12 months or testing was purely desktop/theoretical',
+      'Material operational incidents not logged, investigated or escalated',
+      'Third-party providers excluded from resilience testing',
+      'Single points of failure in critical systems or key personnel not mitigated',
+      'Policyholders experienced service disruptions beyond defined impact tolerances',
+      'Crisis management plan not activated or incident escalation delayed',
+      'Resilience framework not reviewed by Board in the period',
+      'RTOs/RPOs not tested or last test showed significant shortfalls',
+      'No scenario testing conducted against severe or tail-risk disruptions'
+    ],
+    remCtrl: 'Firm must document and Board-approve impact tolerances for all critical services within 60 days. BCP must be tested at minimum annually with formal reporting to the Board. Any identified single points of failure must have a documented and time-bound remediation plan. Third-party resilience requirements must be included in all material outsourcing contracts at next renewal.',
+    remMon: 'HIA to monitor operational incidents via supervisory MI returns. Material incidents (duration > 4 hours affecting policyholders) must be notified to HIA. BCP test reports to be submitted to HIA annually. Resilience framework to be included in next scheduled inspection.'
+  },
+  {
+    id: 'PDC', name: 'Product Design & Compliance', icon: '📦',
+    objective: 'Assess whether health insurance products are designed, launched and maintained in a manner that delivers fair consumer outcomes, complies with the Health Insurance Acts, HIA requirements and EU legislative obligations. Evaluate whether product features, benefit structures and exclusions are transparent, compliant and not misleading to consumers.',
+    keyControls: [
+      'Product Oversight and Governance (POG) framework covering design, approval and review lifecycle',
+      'Defined target market for each product with documented rationale',
+      'Benefits and exclusions review against Health Insurance Acts and HIA rules',
+      'Legal/compliance sign-off required before product launch or material change',
+      'Minimum Benefits compliance check (Minimum Benefit Legislation)',
+      'Open Enrolment, Lifetime Community Rating, and waiting period compliance documented',
+      'Annual product review process with consumer outcome metrics',
+      'Product withdrawal and run-off management process',
+      'Benefit-in-kind and tax reliefs – customer guidance alignment with Revenue rules',
+      'New product or material change notification to HIA as required'
+    ],
+    walkthroughQuestions: [
+      'Describe the product approval process from design brief to market launch.',
+      'Who is responsible for ensuring products comply with Minimum Benefit requirements?',
+      'How is the target market for each product defined and documented?',
+      'How do you ensure exclusions and waiting periods are lawful and fairly applied?',
+      'Describe your Open Enrolment process and how Lifetime Community Rating is applied.',
+      'What product changes were made during the period and what governance approvals were obtained?',
+      'How are consumer complaints about product features fed back into the product review cycle?',
+      'Has the firm notified HIA of any new products or material changes during the period?'
+    ],
+    evidenceRequests: [
+      'Full product catalogue (all active products in period under review)',
+      'Product approval documentation for any new or materially changed products',
+      'Compliance sign-off records for each product',
+      'Minimum Benefits compliance assessment for all products',
+      'Open Enrolment and Lifetime Community Rating process documentation',
+      'Product review reports – annual cycle',
+      'HIA product notifications submitted during the period',
+      'Consumer complaints data segmented by product',
+      'Target market documentation for each product line'
+    ],
+    sampleTests: [
+      { test: 'Minimum Benefits Compliance', desc: 'Test 3 products against current Minimum Benefits – verify full benefit alignment' },
+      { test: 'Open Enrolment', desc: 'Sample 20 new enrolment applications – verify correct application of Open Enrolment rules' },
+      { test: 'Lifetime Community Rating', desc: 'Sample 15 members over 34 years at first insurance – verify correct LCR loading applied' },
+      { test: 'Waiting Periods', desc: 'Sample 20 new members – verify waiting periods correctly applied and waived as required by law' },
+      { test: 'Product Change Notification', desc: 'Cross-reference all product changes in period against HIA notification records' }
+    ],
+    redFlags: [
+      'Products launched or materially changed without compliance or legal sign-off',
+      'Target market definition absent or generic – not tailored to specific product',
+      'Minimum Benefits compliance not evidenced for one or more products',
+      'Open Enrolment restrictions applied contrary to the Health Insurance Acts',
+      'LCR loadings incorrectly calculated or applied to any member cohort',
+      'Waiting periods not waived where legally required (e.g. switchers)',
+      'Product review process not operating or consumer outcomes data not used',
+      'HIA notification obligations not met for new/changed products',
+      'Product exclusions not clearly disclosed in policy documents or marketing',
+      'Consumer complaints about product features not feeding into product governance'
+    ],
+    remCtrl: 'All active products must undergo a formal Minimum Benefits compliance review within 90 days. Any products that failed compliance check must be corrected immediately with affected members notified as required. Product governance framework must be updated to embed HIA notification obligations. Evidence of all product approvals and compliance reviews must be submitted to HIA.',
+    remMon: 'HIA to review all product notifications filed during the next 12 months for completeness and timeliness. Consumer complaints by product to be reported in supervisory MI. HIA to conduct market-wide product review thematic if systemic product compliance failures identified.'
+  },
+  {
+    id: 'PU', name: 'Pricing & Underwriting', icon: '💶',
+    objective: 'Assess whether the insurer\'s pricing and underwriting practices are consistent with Community Rating principles, compliant with the Health Insurance Acts, and do not result in unlawful risk selection, price discrimination or exploitation of consumers. Evaluate the actuarial basis for pricing decisions and financial sustainability of the book.',
+    keyControls: [
+      'Community Rating compliance framework – no risk-rated premiums',
+      'Premium setting process with actuarial certification and Board approval',
+      'Annual premium review process and actuarial opinion',
+      'Pricing model governance – version control, validation and approval',
+      'Open Enrolment pricing compliance – consistent pricing for all eligible applicants',
+      'Lifetime Community Rating loading administration and accuracy',
+      'Risk-rated features (e.g. excess levels, benefit sub-limits) compliance assessment',
+      'Premium affordability review – Board consideration of low-income consumer access',
+      'Premium increase communication – statutory notice periods',
+      'Actuarial Function report reviewed by Board'
+    ],
+    walkthroughQuestions: [
+      'Describe the premium setting process and who approves final rates.',
+      'How do you ensure all pricing complies with Community Rating?',
+      'How are LCR loadings calculated and what QA process validates them?',
+      'Were premium increases introduced during the period? What Board approval was obtained?',
+      'Were statutory notice periods for premium changes met for all affected members?',
+      'How do sub-limits and excess options affect Community Rating compliance?',
+      'Describe the actuarial validation of the pricing model.',
+      'How does the Board assess the financial sustainability of current pricing?'
+    ],
+    evidenceRequests: [
+      'Premium schedule for all products for the full period under review',
+      'Actuarial certification/opinion for all premium changes in the period',
+      'Pricing model documentation with validation reports',
+      'Board approval records for all premium changes',
+      'LCR loading calculation methodology and QA review evidence',
+      'Premium increase notifications to affected members (samples)',
+      'Community Rating compliance assessment from compliance function',
+      'Actuarial Function report for the period'
+    ],
+    sampleTests: [
+      { test: 'Community Rating Verification', desc: 'Select 3 product plans – verify identical premiums across age groups (excluding LCR) and genders' },
+      { test: 'LCR Loading Accuracy', desc: 'Sample 20 members with LCR loadings – recalculate loading based on age at first insurance and verify accuracy' },
+      { test: 'Premium Notice Periods', desc: 'Sample 10 members affected by premium increase – verify notice given within statutory timeframe' },
+      { test: 'New Member Pricing', desc: 'Sample 15 new enrolments – verify premium charged matches published premium schedule' },
+      { test: 'Actuarial Sign-off', desc: 'Verify all premium changes in period have documented actuarial certification prior to implementation' }
+    ],
+    redFlags: [
+      'Any premium differentiation by risk factor (health status, claims history)',
+      'LCR loadings not applied, miscalculated or inconsistently applied',
+      'Premium changes implemented without actuarial certification',
+      'Statutory notice periods for premium changes not met',
+      'Pricing model not validated or documentation out of date',
+      'Community Rating compliance not formally assessed in the period',
+      'Board not receiving actuarial pricing opinions before approving rates',
+      'Premium schedules not consistent with marketed/advertised rates',
+      'Sub-limits or excess options structured in a manner that constitutes de facto risk rating',
+      'LCR loading waivers incorrectly granted'
+    ],
+    remCtrl: 'Any identified pricing non-compliance must be corrected immediately. Affected members must be notified and refunded any overcharge within 30 days. All future premium changes must have documented actuarial certification prior to Board approval. LCR loading administration must be audited and errors corrected with HIA notification. Pricing model governance framework to be updated and submitted to HIA.',
+    remMon: 'HIA to conduct data analytics of premium schedules across the market for Community Rating compliance. LCR loading accuracy to be assessed via supervisory returns. Pricing changes to be notified to HIA with supporting actuarial certification. Premium affordability to be considered in annual supervisory review.'
+  },
+  {
+    id: 'CLM', name: 'Claims Management', icon: '🏥',
+    objective: 'Assess whether claims are processed promptly, accurately and fairly in accordance with policy terms, legislative requirements and HIA expectations. Evaluate the adequacy of claims governance, anti-fraud controls, claims handling timescales and the consistency of benefit application across the member population to ensure equitable consumer outcomes.',
+    keyControls: [
+      'Claims processing policy with defined decision timescales (acknowledgement, assessment, payment)',
+      'Claims authorisation matrix with appropriate authority limits',
+      'Pre-authorisation process documented and consistently applied',
+      'Claims decision quality assurance (QA) programme',
+      'Claims appeals and complaints process clearly documented and communicated',
+      'Counter-fraud policy and fraud detection controls including data analytics',
+      'Benefits applied consistently with policy terms – no selective or arbitrary decisions',
+      'Refusal/partial payment decisions documented with reasoning and communicated to claimant',
+      'Claims data integrity controls – reconciliation of claims paid to policy admin and RE systems',
+      'Subrogation and recovery process for third-party liability claims'
+    ],
+    walkthroughQuestions: [
+      'Walk us through the end-to-end claims journey from submission to payment.',
+      'What are the defined timescales for claims decisions and how is adherence monitored?',
+      'How does the pre-authorisation process work and what are the grounds for refusal?',
+      'How do you ensure consistency of benefit decisions across claims handlers?',
+      'Describe your claims QA programme – how many claims are reviewed and by whom?',
+      'How are fraudulent claims identified and what happens when fraud is suspected?',
+      'What is the appeals process for a member who disputes a claims decision?',
+      'How are claims data fed into RE reporting and how is accuracy maintained?'
+    ],
+    evidenceRequests: [
+      'Claims processing policy and authority matrix',
+      'Claims volume, turnaround time and decision statistics for the period',
+      'Claims QA programme reports for the period',
+      'Pre-authorisation decision log (sampled)',
+      'Claims refusal/partial payment log with documented reasons',
+      'Claims appeals outcomes for the period',
+      'Counter-fraud policy and fraud incident log',
+      'Claims data reconciliation reports',
+      'Customer satisfaction / feedback data for claims experience',
+      'Training records for claims handling staff'
+    ],
+    sampleTests: [
+      { test: 'Turnaround Time', desc: 'Sample 30 claims – measure actual decision time from receipt to payment/refusal against policy timescale' },
+      { test: 'Benefit Consistency', desc: 'Sample 20 claims of same type – verify consistent benefit application across different handlers' },
+      { test: 'Refusal Rationale', desc: 'Sample 15 refused/partial claims – verify documented rationale aligns with policy terms and was communicated' },
+      { test: 'Pre-Auth Review', desc: 'Sample 10 pre-authorisation refusals – verify grounds, documentation and member notification' },
+      { test: 'RE Reconciliation', desc: 'Reconcile 1 quarter of inpatient claims paid to RE returns for same period' }
+    ],
+    redFlags: [
+      'Claims decisions consistently delayed beyond defined policy timescales',
+      'Inconsistent benefit decisions across handlers for equivalent claim types',
+      'Refusal decisions not documented, communicated or appealable by members',
+      'Pre-authorisation used as a mechanism to systematically limit access to benefits',
+      'No QA programme for claims decisions or QA coverage insufficient',
+      'Fraud controls absent or not producing referrals – potential control gap',
+      'Claims data not reconciling to policy admin system or RE returns',
+      'Members not informed of their right to appeal in refusal communications',
+      'Claims handling staff not trained on current policy terms and benefit schedule',
+      'Systematic under-payment of specific benefit types identified'
+    ],
+    remCtrl: 'Claims processing timescales must be reviewed and documented SLAs embedded in operational procedures. QA programme must be strengthened to cover minimum 5% of all claim decisions. All refusal letters must include explicit right of appeal. Any systematic benefit mis-application must be identified and affected members retroactively corrected. Claims training programme to be updated and completed within 60 days.',
+    remMon: 'HIA to monitor claims turnaround time and refusal rates via supervisory MI. Consumer complaints about claims to be tracked and benchmarked. Claims audit to be included in next inspection. Fraud referral rates to be monitored as a supervisory metric.'
+  },
+  {
+    id: 'CC', name: 'Customer Communications', icon: '📨',
+    objective: 'Evaluate whether all consumer-facing communications are clear, fair, accurate and not misleading. Assess the effectiveness of the firm\'s approach to member disclosure, policy documentation, renewals, premium change notices and marketing materials, with emphasis on consumer understanding and informed decision-making.',
+    keyControls: [
+      'Customer communications policy and plain-English guidelines',
+      'Mandatory disclosure checklist for policy documents (cover schedule, T&Cs, exclusions)',
+      'Pre-sale information requirements met – policy summary, premium, key exclusions',
+      'Renewal notice process – timely, accurate and includes comparison of any changed benefits',
+      'Marketing materials approval process with compliance sign-off',
+      'Multi-channel communications strategy (digital, postal, phone) with accessibility',
+      'Premium change notice meeting statutory requirements',
+      'Member communication in respect of benefit changes – advance notice',
+      'Digital communications GDPR compliance – consent management',
+      'Vulnerable consumer identification and communications adaptations'
+    ],
+    walkthroughQuestions: [
+      'Describe the approval process for customer-facing documents including marketing materials.',
+      'How do you ensure policy documents are in plain English and consumer-friendly?',
+      'Walk us through the renewal notice process – when does it issue and what does it include?',
+      'How are vulnerable consumers identified and how are communications adapted for them?',
+      'How are premium or benefit changes communicated to members and within what timeframe?',
+      'How do you obtain and manage consent for digital marketing communications?',
+      'What consumer testing is done on new communications or product documentation?',
+      'How are mis-selling or unclear communication complaints identified and acted upon?'
+    ],
+    evidenceRequests: [
+      'All policy documents / Certificate of Insurance templates in use during the period',
+      'Renewal notice templates with sample communications',
+      'Marketing materials (digital, print, TV/radio) from the period',
+      'Compliance approval records for all communications',
+      'Premium change notice samples and dispatch records',
+      'Vulnerable customer policy and handling process',
+      'Consent management records (digital/email marketing)',
+      'Communications complaints data for the period',
+      'Consumer testing or plain-English assessment reports'
+    ],
+    sampleTests: [
+      { test: 'Policy Document Review', desc: 'Review all policy document templates – assess clarity, completeness and compliance with disclosure requirements' },
+      { test: 'Renewal Notice Timeliness', desc: 'Sample 20 renewals – verify notice issued within statutory timeframe before renewal date' },
+      { test: 'Marketing Compliance', desc: 'Review 5 marketing campaigns – verify compliance approval and accurate benefit representation' },
+      { test: 'Disclosure Completeness', desc: 'Sample 10 new business applications – verify all mandatory disclosure documents issued' },
+      { test: 'Vulnerable Customer', desc: 'Assess 3 communications for accessibility and appropriateness for vulnerable consumers' }
+    ],
+    redFlags: [
+      'Policy documents contain ambiguous exclusion language or rely on undefined terms',
+      'Renewal notices issued less than statutory minimum notice period before renewal',
+      'Marketing materials overstate benefits or omit material exclusions',
+      'No plain-English review or consumer testing conducted on key documents',
+      'Premium change notices do not meet statutory minimum notice requirements',
+      'Digital marketing sent without valid consent or consent records not maintained',
+      'Vulnerable consumer communications policy not documented or operationalised',
+      'Compliance sign-off bypassed for campaign or communication launches',
+      'Member communications for benefit changes issued after change takes effect',
+      'High volume of complaints attributable to unclear or misleading communications'
+    ],
+    remCtrl: 'Full audit of all consumer-facing documents to be completed within 90 days. Any documents identified as unclear, inaccurate or non-compliant must be updated before next use. Plain-English review must be embedded in the communications approval process. Vulnerable consumer communications framework must be documented and operationalised. All marketing materials must have compliance sign-off before use.',
+    remMon: 'HIA to conduct mystery shopping exercise on customer communications in next 12 months. Communications complaints to be tracked in supervisory MI. Annual thematic review of policy documents across the market to be considered.'
+  },
+  {
+    id: 'CH', name: 'Complaints Handling', icon: '📞',
+    objective: 'Assess the adequacy and fairness of the insurer\'s complaints handling process, including whether complaints are received, acknowledged, investigated, resolved and recorded in a timely and consistent manner, and whether root cause analysis drives systemic improvements in consumer outcomes. Evaluate compliance with HIA complaints requirements and the Financial Services and Pensions Ombudsman (FSPO) obligations.',
+    keyControls: [
+      'Documented complaints handling policy accessible to all consumers',
+      'Complaints definition consistent with regulatory requirements',
+      'Acknowledgement within 5 business days; substantive response within 40 business days (FSPO)',
+      'Complaints register maintained with all mandatory data fields',
+      'Root cause analysis process for complaints identifying systemic issues',
+      'Escalation process for complex or significant complaints',
+      'FSPO referrals tracked and outcomes monitored',
+      'Complaints data reported to Board/Risk Committee',
+      'Staff training on complaints handling obligations',
+      'Consumer feedback from complaints used to improve products and services'
+    ],
+    walkthroughQuestions: [
+      'How does a consumer make a complaint – what channels are available?',
+      'Walk us through the complaint journey from receipt to resolution.',
+      'How are complaints classified and what defines a "complaint" in your process?',
+      'Are all complaints captured in the central complaints register?',
+      'How is root cause analysis conducted and what happens when a systemic issue is identified?',
+      'How do you track FSPO referrals and what actions do you take when FSPO upholds a complaint?',
+      'What complaints data is reported to the Board and how frequently?',
+      'Have complaints volumes changed significantly during the period and what is the cause?'
+    ],
+    evidenceRequests: [
+      'Complaints handling policy',
+      'Complaints register for the full period under review',
+      'Sample of complaints files (mix of resolved and FSPO-referred)',
+      'Complaints MI reports provided to Board/Risk Committee',
+      'Root cause analysis reports',
+      'FSPO referral and outcome log',
+      'Staff training records on complaints handling',
+      'Complaints handling KPI reports (volumes, timescales, outcomes)',
+      'Consumer satisfaction survey data related to complaints'
+    ],
+    sampleTests: [
+      { test: 'Acknowledgement Timeliness', desc: 'Sample 25 complaints – verify acknowledgement within 5 business days of receipt' },
+      { test: 'Resolution Timeliness', desc: 'Sample 25 complaints – verify substantive response within 40 business days' },
+      { test: 'Register Completeness', desc: 'Cross-reference complaints register against operational records – identify any unregistered complaints' },
+      { test: 'FSPO Outcomes', desc: 'Review all FSPO determinations in period – verify firm\'s response and remediation actions' },
+      { test: 'Root Cause Follow-up', desc: 'Sample 5 root cause analyses – verify identified issues were actioned and recurrence prevented' }
+    ],
+    redFlags: [
+      'Complaints log is incomplete or not all complaints captured in central register',
+      'Acknowledgement or substantive response timescales routinely breached',
+      'Complaints handled informally without logging – "off-system" resolutions',
+      'No root cause analysis process or systemic issues not escalated',
+      'FSPO referrals not tracked or FSPO decisions not implemented',
+      'Complaints data not reported to Board – no management oversight',
+      'Complaints definition is too narrow – valid complaints being reclassified as "queries"',
+      'Staff not trained on complaints obligations or FSPO process',
+      'High proportion of complaints relating to same product or process – systemic risk',
+      'Compensation paid informally without proper authorisation or recording'
+    ],
+    remCtrl: 'Complaints register must be audited for completeness and any unregistered complaints retrospectively logged. Complaints policy must be updated to align with FSPO requirements. All staff handling consumer contacts must complete complaints handling training within 60 days. Root cause analysis must be formalised and systemic issues escalated to Risk Committee. FSPO tracking to be implemented as a mandatory Board-level MI item.',
+    remMon: 'HIA to monitor complaints volumes and resolution timescales via supervisory MI returns. FSPO determination data to be monitored for trend analysis. Complaints-related consumer detriment to trigger supervisory escalation. Market-wide thematic on complaints handling to be considered by HIA.'
+  },
+  {
+    id: 'DQ', name: 'Data Quality & Regulatory Returns', icon: '📊',
+    objective: 'Assess whether the insurer maintains accurate, complete and timely data to meet all regulatory reporting obligations to the HIA. Evaluate the data governance framework, data quality controls, and the process for compiling and submitting statutory returns, ensuring that data submitted to HIA is a true and fair reflection of the insurer\'s operations.',
+    keyControls: [
+      'Data governance framework with defined data ownership and stewardship roles',
+      'Data quality policy with defined accuracy, completeness and timeliness standards',
+      'Regulatory returns calendar with accountability and sign-off process',
+      'Source-to-submission reconciliation controls for all key returns',
+      'Data audit trail – ability to trace submitted data back to source systems',
+      'Data quality dashboard or monitoring reports reviewed by management',
+      'Material error notification process for regulatory returns',
+      'GDPR Data Register (Article 30) maintained and up to date',
+      'Data retention policy aligned to regulatory and legal requirements',
+      'Regular data quality reviews with remediation action tracking'
+    ],
+    walkthroughQuestions: [
+      'List all regulatory returns submitted to HIA during the period – who is responsible for each?',
+      'Describe the data extraction, validation and approval process before submission.',
+      'How are data errors identified before submission and how are they corrected?',
+      'Have any regulatory returns been submitted late or with material errors in the period?',
+      'How is data quality monitored on an ongoing basis?',
+      'Can you trace a figure from a submitted return back to the source system?',
+      'How are data protection obligations (GDPR) embedded in your data governance?',
+      'What data quality issues have been identified in the period and how were they addressed?'
+    ],
+    evidenceRequests: [
+      'Full list of regulatory returns submitted to HIA in the period with submission dates',
+      'Source-to-submission reconciliation reports for all key returns',
+      'Data quality monitoring reports for the period',
+      'Material error notification records (if applicable)',
+      'GDPR Article 30 Data Register',
+      'Data governance framework and policy',
+      'Data retention and deletion records',
+      'Regulatory returns sign-off records (CFO/Compliance)',
+      'IT data dictionary and data lineage documentation'
+    ],
+    sampleTests: [
+      { test: 'Return Timeliness', desc: 'Verify all HIA returns submitted in period against statutory deadlines – identify any late submissions' },
+      { test: 'Data Trace', desc: 'Select 3 figures from submitted returns – trace each back to source system via data lineage' },
+      { test: 'Reconciliation Verification', desc: 'Review reconciliation control reports for 2 returns – assess completeness and sign-off' },
+      { test: 'GDPR Register', desc: 'Review Article 30 register – assess accuracy, completeness and recent update date' },
+      { test: 'Data Quality Reports', desc: 'Review 3 data quality monitoring reports – assess KPIs, trends and management action' }
+    ],
+    redFlags: [
+      'Regulatory returns submitted late without prior notification to HIA',
+      'No source-to-submission reconciliation controls – returns compiled manually',
+      'Material discrepancies between different returns covering the same period/data',
+      'Data errors in submitted returns not notified to HIA – discovered by HIA or third parties',
+      'Data audit trail does not exist – figures cannot be traced to source systems',
+      'GDPR Article 30 register out of date or not maintained',
+      'Data governance responsibilities not clearly assigned or documented',
+      'Data quality monitoring not performed or monitoring reports not reviewed by management',
+      'Regulatory returns not signed off by CFO or Compliance before submission',
+      'Data retention policy not implemented – data deleted prematurely or retained beyond legal period'
+    ],
+    remCtrl: 'A formal data quality audit must be conducted within 90 days covering all regulatory returns in the period. Any identified errors in prior returns must be notified to HIA and corrected via formal restatement. Source-to-submission reconciliation controls must be implemented for all key returns within 60 days. GDPR Article 30 register must be updated within 30 days. Regulatory returns sign-off process must include CFO and Compliance certification.',
+    remMon: 'HIA to monitor return submission timeliness as a supervisory metric. Data analytics to be applied to returns for cross-period consistency. Data quality compliance to be assessed in subsequent inspections. Systemic data quality failures to be referred for enforcement assessment.'
+  },
+  {
+    id: 'OTP', name: 'Outsourcing & Third-Party Risk', icon: '🔗',
+    objective: 'Evaluate whether the insurer has adequate governance, due diligence, contractual protections and ongoing oversight arrangements for all material outsourced functions and third-party service providers. Ensure that outsourcing does not undermine the insurer\'s ability to meet its regulatory obligations or deliver fair consumer outcomes.',
+    keyControls: [
+      'Outsourcing policy defining materiality thresholds and governance requirements',
+      'Outsourcing register covering all material and non-material third-party arrangements',
+      'Due diligence process for onboarding new third parties (financial, operational, regulatory, cyber)',
+      'Board or Risk Committee approval for material outsourcing arrangements',
+      'Robust contracts with SLAs, audit rights, data protection, regulatory compliance, and exit provisions',
+      'Annual third-party performance reviews against SLAs',
+      'Concentration risk assessment – dependency on single provider',
+      'Exit and contingency planning for all material third parties',
+      'Sub-outsourcing oversight and approval controls',
+      'Regulatory notification of material outsourcing changes to HIA'
+    ],
+    walkthroughQuestions: [
+      'Describe your outsourcing governance framework and how material outsourcing is defined.',
+      'Walk us through the due diligence process for a new third-party arrangement.',
+      'What ongoing monitoring is conducted for each material third party?',
+      'How do you manage concentration risk where critical functions rely on a single provider?',
+      'What contractual rights do you have to audit third parties and have you exercised them?',
+      'How are sub-outsourcing arrangements identified and governed?',
+      'Have there been any third-party failures or service disruptions in the period – how were these managed?',
+      'Describe your exit planning for key outsourced functions.'
+    ],
+    evidenceRequests: [
+      'Full outsourcing register / third-party register',
+      'Due diligence reports for any new third-party arrangements in the period',
+      'Board/Risk Committee approval records for material outsourcing',
+      'Material third-party contracts (select 3 key providers)',
+      'Annual third-party performance review reports',
+      'SLA performance reports for key third parties',
+      'Exit plans / contingency plans for material third parties',
+      'Sub-outsourcing log and approval records',
+      'Third-party incident log for the period'
+    ],
+    sampleTests: [
+      { test: 'Register Completeness', desc: 'Cross-reference outsourcing register against accounts payable data to identify unregistered providers' },
+      { test: 'Contract Review', desc: 'Review 3 material third-party contracts – verify SLAs, audit rights, data protection and exit clauses present' },
+      { test: 'Due Diligence', desc: 'Review due diligence files for 2 new providers onboarded in period – verify completeness of assessment' },
+      { test: 'SLA Monitoring', desc: 'Review SLA performance reports for 3 key providers – identify any breaches and management response' },
+      { test: 'Sub-Outsourcing', desc: 'Identify 2 key providers – verify sub-outsourcing arrangements are known, documented and approved' }
+    ],
+    redFlags: [
+      'Outsourcing register incomplete – material providers not captured',
+      'No due diligence conducted before onboarding material third parties',
+      'Material outsourcing approved without Board or Risk Committee sign-off',
+      'Contracts lacking SLAs, audit rights or regulatory compliance clauses',
+      'No ongoing SLA monitoring or performance reviews for key providers',
+      'Concentration risk in a single provider with no exit plan',
+      'Sub-outsourcing by key providers not disclosed or approved',
+      'Third-party incidents not logged or reported to management',
+      'HIA not notified of material outsourcing changes as required',
+      'Exit plans not documented or untested for critical outsourced functions'
+    ],
+    remCtrl: 'Outsourcing register must be completed and validated within 60 days. All material third-party contracts must be reviewed and any gaps in SLAs, audit rights or exit provisions remediated at next contract renewal (or sooner for critical gaps). Due diligence must be conducted retrospectively for any providers onboarded without assessment. Exit plans must be documented and tested for all material providers within 90 days.',
+    remMon: 'HIA to request outsourcing register annually as part of supervisory data collection. Third-party incidents and SLA breaches to be reported via supervisory MI. Material outsourcing changes to be notified to HIA in advance. Outsourcing governance to be assessed in subsequent inspections.'
+  },
+  {
+    id: 'TC', name: 'Training & Culture', icon: '🎓',
+    objective: 'Assess whether the insurer fosters a culture of compliance, consumer focus and professional excellence throughout the organisation. Evaluate whether staff receive adequate training, whether regulatory and ethical obligations are understood at all levels, and whether the firm\'s culture supports the objectives of the HIA and consumer protection.',
+    keyControls: [
+      'Mandatory training framework covering regulatory obligations, compliance and conduct',
+      'Annual training needs analysis (TNA) aligned to role, function and risk profile',
+      'Compliance training completion records with minimum pass standards',
+      'Culture and conduct framework articulated by senior management and Board',
+      'Code of Conduct / Ethics Policy communicated and acknowledged by all staff',
+      'Senior management remuneration aligned to compliance and conduct outcomes',
+      'Internal audit or compliance assessment of training completion rates',
+      'Induction programme covering regulatory obligations for new joiners',
+      'Training on key areas: Data Protection, Complaints Handling, RE Reporting, Claims',
+      'Feedback mechanisms for staff to raise conduct or compliance concerns'
+    ],
+    walkthroughQuestions: [
+      'Describe your mandatory training framework – what is covered and how frequently?',
+      'How do you ensure staff in regulatory-critical roles are adequately trained?',
+      'How is culture and conduct assessed within the organisation?',
+      'Are there any areas where training completion is below target – what action is taken?',
+      'How is the Code of Conduct embedded in day-to-day operations?',
+      'Describe how senior leadership models the compliance culture.',
+      'What mechanisms exist for staff to raise concerns without fear of retaliation?',
+      'How is training effectiveness measured beyond completion rates?'
+    ],
+    evidenceRequests: [
+      'Training framework and Training Needs Analysis for the period',
+      'Training completion records for all staff (role-specific and mandatory training)',
+      'Culture and conduct framework documentation',
+      'Code of Conduct / Ethics Policy (signed acknowledgement records)',
+      'Internal audit or compliance review of training programme',
+      'Induction programme materials and completion records for new joiners',
+      'Whistleblowing / speak-up records and outcomes',
+      'Staff conduct incident log for the period',
+      'Senior management performance framework – conduct metrics'
+    ],
+    sampleTests: [
+      { test: 'Completion Rate Review', desc: 'Review training completion statistics – assess overall rate and identify functions with low compliance' },
+      { test: 'Key Role Training', desc: 'Select 10 staff in regulatory-critical roles – verify role-specific training completed and current' },
+      { test: 'New Joiner Induction', desc: 'Sample 5 staff who joined in period – verify completed induction training within required timeframe' },
+      { test: 'Code of Conduct', desc: 'Verify all staff have signed Code of Conduct acknowledgement for current version' },
+      { test: 'Speak-Up Culture', desc: 'Review speak-up/whistleblowing log – assess volume, type and management response' }
+    ],
+    redFlags: [
+      'Training completion rates below 90% for mandatory regulatory training',
+      'Staff in regulatory-critical roles (RE reporting, claims, compliance) not trained',
+      'No culture or conduct framework articulated or communicated',
+      'Code of Conduct not signed by all staff or not updated to reflect current obligations',
+      'No mechanism for staff to raise concerns confidentially',
+      'Whistleblowing reports not investigated or outcomes not documented',
+      'Training is completed at a token level – poor pass rates or no assessment',
+      'New joiners in regulatory roles not completing induction before performing duties',
+      'No connection between conduct/compliance outcomes and senior management remuneration',
+      'Cultural tone from senior management inconsistent with stated compliance values'
+    ],
+    remCtrl: 'Training completion audit to be conducted within 30 days. All staff below 90% completion rate to complete outstanding training within 60 days. Role-specific training for regulatory-critical roles to be verified as current and complete. Code of Conduct to be reissued and re-signed by all staff. Speak-up mechanism to be reviewed and actively promoted by senior leadership.',
+    remMon: 'HIA to request annual training completion data as part of supervisory returns. Culture and conduct to be assessed in subsequent inspections, including staff interviews. Conduct incidents to be reported as part of supervisory MI. HIA to monitor culture-related complaints and whistleblowing referrals.'
+  }
+];
+
+// ── APP STATE ────────────────────────────────────────────────
+const state = {
+  setup: {},
+  selectedRisks: [],
+  execution: {}, // keyed by risk area id
+  remediations: [],
+  currentPhase: 1,
+  currentRiskTab: null,
+  currentSubTab: {}
+};
+
+// ── UTILITIES ────────────────────────────────────────────────
+function showToast(msg, type='') {
+  const t = document.createElement('div');
+  t.className = 'toast ' + type;
+  t.innerHTML = (type==='success'?'✓ ':type==='error'?'✗ ':'ℹ ') + msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3000);
+}
+
+function gotoPhase(n) {
+  document.querySelectorAll('.phase').forEach(p => p.classList.remove('active'));
+  document.getElementById('phase' + n).classList.add('active');
+  document.querySelectorAll('.step-btn').forEach(b => {
+    b.classList.remove('active');
+    if (parseInt(b.dataset.phase) < n) b.classList.add('completed');
+    else b.classList.remove('completed');
+  });
+  document.querySelector('[data-phase="'+n+'"]').classList.add('active');
+  state.currentPhase = n;
+  if (n === 2) renderPhase2();
+  if (n === 3) renderPhase3();
+  if (n === 4) renderPhase4();
+  if (n === 5) renderPhase5();
+  window.scrollTo(0, 0);
+}
+
+function val(id) { const el = document.getElementById(id); return el ? el.value : ''; }
+function setVal(id, v) { const el = document.getElementById(id); if (el) el.value = v || ''; }
+
+// ── PHASE 1: SETUP ───────────────────────────────────────────
+function initRiskGrid() {
+  const grid = document.getElementById('riskAreaGrid');
+  grid.innerHTML = RISK_AREAS.map(r => `
+    <div class="checkbox-item" id="cb_${r.id}" onclick="toggleRisk('${r.id}')">
+      <input type="checkbox" id="chk_${r.id}">
+      <div class="checkbox-icon" id="ci_${r.id}"></div>
+      <div>
+        <div class="checkbox-label">${r.icon} ${r.name}</div>
+      </div>
+    </div>`).join('');
+}
+initRiskGrid();
+
+function toggleRisk(id) {
+  const item = document.getElementById('cb_' + id);
+  const icon = document.getElementById('ci_' + id);
+  const chk = document.getElementById('chk_' + id);
+  const checked = !chk.checked;
+  chk.checked = checked;
+  item.classList.toggle('checked', checked);
+  icon.innerHTML = checked ? '✓' : '';
+}
+
+function selectAllRisks() {
+  RISK_AREAS.forEach(r => {
+    document.getElementById('chk_' + r.id).checked = true;
+    document.getElementById('cb_' + r.id).classList.add('checked');
+    document.getElementById('ci_' + r.id).innerHTML = '✓';
+  });
+}
+
+function clearAllRisks() {
+  RISK_AREAS.forEach(r => {
+    document.getElementById('chk_' + r.id).checked = false;
+    document.getElementById('cb_' + r.id).classList.remove('checked');
+    document.getElementById('ci_' + r.id).innerHTML = '';
+  });
+}
+
+function saveSetup() {
+  const selected = RISK_AREAS.filter(r => document.getElementById('chk_' + r.id)?.checked);
+  if (!val('insurerName')) { showToast('Please enter the Insurer Name', 'error'); return; }
+  if (selected.length === 0) { showToast('Please select at least one Risk Focus Area', 'error'); return; }
+  
+  state.setup = {
+    insurerName: val('insurerName'), regNumber: val('regNumber'),
+    inspectionType: val('inspectionType'), reviewPeriod: val('reviewPeriod'),
+    inspStartDate: val('inspStartDate'), inspEndDate: val('inspEndDate'),
+    leadInspector: val('leadInspector'), supportingInspectors: val('supportingInspectors'),
+    insurerContact: val('insurerContact'), insurerEmail: val('insurerEmail'),
+    priorRef: val('priorRef'), priorFindings: val('priorFindings'),
+    inspRationale: val('inspRationale'), consumerConcern: val('consumerConcern'),
+    marketConcern: val('marketConcern'), inherentRisk: val('inherentRisk'),
+    sensitivity: val('sensitivity')
+  };
+  state.selectedRisks = selected;
+  
+  // Init execution state for each risk area
+  selected.forEach(r => {
+    if (!state.execution[r.id]) {
+      state.execution[r.id] = {
+        rating: '', notes: '', redFlagsFound: '', additionalFindings: '',
+        evidenceStatus: r.evidenceRequests.map(() => 'pending'),
+        sampleResults: r.sampleTests.map(t => ({ result: '', notes: '' }))
+      };
+    }
+  });
+
+  document.getElementById('headerInspInfo').innerHTML = `<strong>${state.setup.insurerName}</strong> | ${state.setup.inspectionType || 'Inspection'} | ${state.setup.reviewPeriod || '–'}`;
+  showToast('Setup saved successfully', 'success');
+  gotoPhase(2);
+}
+
+// ── PHASE 2: EXECUTION ───────────────────────────────────────
+function renderPhase2() {
+  document.getElementById('phase2Subtitle').textContent =
+    `${state.setup.insurerName || 'Insurer'} | ${state.setup.inspectionType || 'Inspection'} | ${state.setup.reviewPeriod || 'Period TBC'}`;
+  
+  const tabs = document.getElementById('riskAreaTabs');
+  tabs.innerHTML = state.selectedRisks.map(r => `
+    <div class="risk-tab ${state.currentRiskTab === r.id ? 'active' : ''} ${getRatingClass(r.id)}"
+         onclick="showRiskArea('${r.id}')">
+      <span class="status-dot"></span>${r.icon} ${r.name}
+    </div>`).join('');
+  
+  if (state.selectedRisks.length > 0 && !state.currentRiskTab) {
+    showRiskArea(state.selectedRisks[0].id);
+  } else if (state.currentRiskTab) {
+    showRiskArea(state.currentRiskTab);
+  }
+}
+
+function getRatingClass(id) {
+  const r = state.execution[id]?.rating;
+  if (!r) return '';
+  const map = { 'Satisfactory': 'rated-S', 'Needs Improvement': 'rated-NI', 'Unsatisfactory': 'rated-U', 'Not Tested': 'rated-NT' };
+  return map[r] || '';
+}
+
+function showRiskArea(id) {
+  state.currentRiskTab = id;
+  const r = RISK_AREAS.find(x => x.id === id);
+  const ex = state.execution[id];
+  if (!state.currentSubTab[id]) state.currentSubTab[id] = 'overview';
+
+  document.querySelectorAll('.risk-tab').forEach(t => t.classList.remove('active'));
+  const tab = [...document.querySelectorAll('.risk-tab')].find(t => t.onclick.toString().includes(id));
+  // simpler: rebuild tabs
+  renderRiskTabs();
+
+  const sub = state.currentSubTab[id];
+
+  document.getElementById('riskAreaContent').innerHTML = `
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title"><span class="icon">${r.icon}</span> ${r.name}</div>
+          <div class="card-desc">Risk area ID: ${r.id} | ${state.setup.insurerName || 'Entity'}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div>
+            <div style="font-size:10px;font-weight:700;letter-spacing:0.5px;color:var(--text-light);text-transform:uppercase;margin-bottom:4px;">Area Rating</div>
+            <div class="rating-widget">
+              ${['Satisfactory','Needs Improvement','Unsatisfactory','Not Tested'].map(rt =>
+                `<button class="rating-btn ${ex.rating === rt ? 'sel-' + ratingCode(rt) : ''}"
+                  onclick="setRating('${id}','${rt}')">${rt}</button>`).join('')}
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="subsection-tabs">
+        ${[['overview','Objective & Controls'],['walkthrough','Walkthrough / Interview'],['evidence','Evidence Requests'],['samples','Sample Tests'],['flags','Red Flags'],['remediation','Remediation'],['notes','Inspector Notes']].map(([key,label]) =>
+          `<button class="sub-tab ${sub===key?'active':''}" onclick="showSubTab('${id}','${key}')">${label}</button>`
+        ).join('')}
+      </div>
+      <div id="subContent_${id}">
+        ${renderSubTab(r, ex, sub, id)}
+      </div>
+    </div>`;
+}
+
+function ratingCode(r) {
+  return { 'Satisfactory': 'S', 'Needs Improvement': 'NI', 'Unsatisfactory': 'U', 'Not Tested': 'NT' }[r] || '';
+}
+
+function setRating(id, rating) {
+  state.execution[id].rating = rating;
+  showRiskArea(id);
+  renderRiskTabs();
+}
+
+function renderRiskTabs() {
+  const tabs = document.getElementById('riskAreaTabs');
+  tabs.innerHTML = state.selectedRisks.map(r => `
+    <div class="risk-tab ${state.currentRiskTab === r.id ? 'active' : ''} ${getRatingClass(r.id)}"
+         onclick="showRiskArea('${r.id}')">
+      <span class="status-dot"></span>${r.icon} ${r.name}
+    </div>`).join('');
+}
+
+function showSubTab(riskId, subKey) {
+  state.currentSubTab[riskId] = subKey;
+  const r = RISK_AREAS.find(x => x.id === riskId);
+  const ex = state.execution[riskId];
+  // save any current notes before switching
+  saveNotes(riskId);
+  document.querySelectorAll('.sub-tab').forEach(t => {
+    t.classList.toggle('active', t.textContent.toLowerCase().includes(subKey === 'overview' ? 'objective' : subKey === 'flags' ? 'red' : subKey === 'samples' ? 'sample' : subKey === 'walkthrough' ? 'walkthrough' : subKey === 'evidence' ? 'evidence' : subKey === 'remediation' ? 'remediation' : 'notes'));
+  });
+  document.getElementById('subContent_' + riskId).innerHTML = renderSubTab(r, ex, subKey, riskId);
+}
+
+function saveNotes(id) {
+  const n = document.getElementById('notes_' + id);
+  const rf = document.getElementById('redflagsFound_' + id);
+  const af = document.getElementById('addFindings_' + id);
+  if (n) state.execution[id].notes = n.value;
+  if (rf) state.execution[id].redFlagsFound = rf.value;
+  if (af) state.execution[id].additionalFindings = af.value;
+}
+
+function renderSubTab(r, ex, sub, id) {
+  switch(sub) {
+    case 'overview': return `
+      <div>
+        <h4 style="font-family:'Libre Baskerville',serif;font-size:13px;color:var(--navy);margin-bottom:8px;">📌 Objective</h4>
+        <p style="font-size:13px;line-height:1.7;color:var(--text-mid);margin-bottom:18px;padding:12px;background:var(--info-bg);border-radius:var(--radius);">${r.objective}</p>
+        <h4 style="font-family:'Libre Baskerville',serif;font-size:13px;color:var(--navy);margin-bottom:8px;">🔑 Key Controls to Test</h4>
+        <ul class="content-list checks">${r.keyControls.map(c => `<li>${c}</li>`).join('')}</ul>
+      </div>`;
+    case 'walkthrough': return `
+      <div>
+        <div class="alert alert-info" style="margin-bottom:14px;">🗣 Use these questions during management walkthroughs and interviews. Document responses below.</div>
+        <ul class="content-list">${r.walkthroughQuestions.map((q,i) => `<li><strong>Q${i+1}:</strong> ${q}</li>`).join('')}</ul>
+      </div>`;
+    case 'evidence': return `
+      <div>
+        <div class="alert alert-warning" style="margin-bottom:14px;">📎 Track evidence receipt status. Click the status badge to toggle between Pending / Received / Outstanding.</div>
+        ${r.evidenceRequests.map((e, i) => `
+        <div class="evidence-item">
+          <span class="evidence-status ${evidenceClass(ex.evidenceStatus[i])}" onclick="toggleEvidence('${id}',${i})">${ex.evidenceStatus[i] || 'pending'}</span>
+          <div style="flex:1;">
+            <div style="font-size:13px;">${e}</div>
+            <input type="text" placeholder="Reference / location of evidence..." id="evNote_${id}_${i}"
+              value="${ex.evidenceNotes?.[i]||''}"
+              onblur="saveEvNote('${id}',${i},this.value)"
+              style="margin-top:4px;font-size:12px;padding:4px 8px;border:1px dashed var(--border);border-radius:3px;width:100%;background:transparent;" />
+          </div>
+        </div>`).join('')}
+      </div>`;
+    case 'samples': return `
+      <div>
+        <div class="alert alert-info" style="margin-bottom:14px;">🧪 Record sample test results below. Document scope, findings and any exceptions identified.</div>
+        <table class="sample-table">
+          <thead><tr><th>#</th><th>Test</th><th>Description</th><th>Result</th><th>Exceptions / Notes</th></tr></thead>
+          <tbody>
+            ${r.sampleTests.map((t, i) => `
+            <tr>
+              <td style="width:30px;font-weight:700;color:var(--navy);">${i+1}</td>
+              <td style="width:140px;font-weight:600;font-size:12px;">${t.test}</td>
+              <td style="font-size:12px;color:var(--text-mid);">${t.desc}</td>
+              <td style="width:130px;">
+                <select onchange="saveSampleResult('${id}',${i},'result',this.value)" style="width:100%;font-size:12px;border:1px solid var(--border);border-radius:3px;padding:3px;">
+                  <option value="" ${!ex.sampleResults[i]?.result?'selected':''}>— Select —</option>
+                  <option ${ex.sampleResults[i]?.result==='Pass'?'selected':''}>Pass</option>
+                  <option ${ex.sampleResults[i]?.result==='Pass with exceptions'?'selected':''}>Pass with exceptions</option>
+                  <option ${ex.sampleResults[i]?.result==='Fail'?'selected':''}>Fail</option>
+                  <option ${ex.sampleResults[i]?.result==='Not tested'?'selected':''}>Not tested</option>
+                </select>
+              </td>
+              <td><input type="text" placeholder="Note exceptions..." value="${ex.sampleResults[i]?.notes||''}"
+                onblur="saveSampleResult('${id}',${i},'notes',this.value)" style="width:100%;font-size:12px;padding:3px 6px;border:1px dashed var(--border);border-radius:3px;background:transparent;"></td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>`;
+    case 'flags': return `
+      <div>
+        <div class="alert alert-danger" style="margin-bottom:14px;">⚑ Review all red flags and document whether any were identified during this inspection.</div>
+        <ul class="content-list red-flags">${r.redFlags.map(f => `<li>${f}</li>`).join('')}</ul>
+        <div class="divider"></div>
+        <div class="form-group">
+          <label>Red Flags Identified During Inspection</label>
+          <textarea id="redflagsFound_${id}" style="min-height:80px;" placeholder="Document any red flags observed..." onblur="saveNotes('${id}')">${ex.redFlagsFound||''}</textarea>
+        </div>
+      </div>`;
+    case 'remediation': return `
+      <div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+          <div>
+            <h4 style="font-family:'Libre Baskerville',serif;font-size:13px;color:var(--navy);margin-bottom:8px;">🔧 Controls & Evidence Expectations</h4>
+            <div style="background:var(--warning-bg);border:1px solid #F0B060;border-radius:var(--radius);padding:14px;font-size:13px;line-height:1.7;color:var(--text-mid);">${r.remCtrl}</div>
+          </div>
+          <div>
+            <h4 style="font-family:'Libre Baskerville',serif;font-size:13px;color:var(--navy);margin-bottom:8px;">📡 Monitoring & Audit Expectations</h4>
+            <div style="background:var(--info-bg);border:1px solid #9BB8D8;border-radius:var(--radius);padding:14px;font-size:13px;line-height:1.7;color:var(--text-mid);">${r.remMon}</div>
+          </div>
+        </div>
+      </div>`;
+    case 'notes': return `
+      <div>
+        <div class="form-grid">
+          <div class="form-group span-2">
+            <label>Inspector Notes & Observations</label>
+            <textarea id="notes_${id}" style="min-height:100px;" placeholder="General notes, key observations and context from the inspection..." onblur="saveNotes('${id}')">${ex.notes||''}</textarea>
+          </div>
+          <div class="form-group span-2">
+            <label>Additional Findings</label>
+            <textarea id="addFindings_${id}" style="min-height:80px;" placeholder="Any additional findings not captured elsewhere..." onblur="saveNotes('${id}')">${ex.additionalFindings||''}</textarea>
+          </div>
+          <div class="form-group">
+            <label>Action Required</label>
+            <select id="actionReq_${id}" onchange="state.execution['${id}'].actionRequired=this.value">
+              <option value="">— Select —</option>
+              <option ${ex.actionRequired==='None'?'selected':''}>None</option>
+              <option ${ex.actionRequired==='Remediation Letter'?'selected':''}>Remediation Letter</option>
+              <option ${ex.actionRequired==='Enforcement Referral'?'selected':''}>Enforcement Referral</option>
+              <option ${ex.actionRequired==='Enhanced Monitoring'?'selected':''}>Enhanced Monitoring</option>
+              <option ${ex.actionRequired==='Follow-up Visit'?'selected':''}>Follow-up Visit</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Priority</label>
+            <select id="priority_${id}" onchange="state.execution['${id}'].priority=this.value">
+              <option value="">— Select —</option>
+              <option ${ex.priority==='High'?'selected':''}>High</option>
+              <option ${ex.priority==='Medium'?'selected':''}>Medium</option>
+              <option ${ex.priority==='Low'?'selected':''}>Low</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn btn-success" style="margin-top:10px;" onclick="saveNotes('${id}');showToast('Notes saved','success');">💾 Save Notes</button>
+      </div>`;
+    default: return '';
+  }
+}
+
+function evidenceClass(s) {
+  return { 'pending': 'ev-pending', 'received': 'ev-received', 'outstanding': 'ev-outstanding' }[s] || 'ev-pending';
+}
+
+function toggleEvidence(id, i) {
+  const cycle = ['pending', 'received', 'outstanding'];
+  const cur = state.execution[id].evidenceStatus[i] || 'pending';
+  state.execution[id].evidenceStatus[i] = cycle[(cycle.indexOf(cur) + 1) % cycle.length];
+  showRiskArea(id);
+}
+
+function saveEvNote(id, i, v) {
+  if (!state.execution[id].evidenceNotes) state.execution[id].evidenceNotes = [];
+  state.execution[id].evidenceNotes[i] = v;
+}
+
+function saveSampleResult(id, i, field, v) {
+  if (!state.execution[id].sampleResults[i]) state.execution[id].sampleResults[i] = {};
+  state.execution[id].sampleResults[i][field] = v;
+}
+
+// ── PHASE 3: FINDINGS ────────────────────────────────────────
+function renderPhase3() {
+  // Stats
+  const total = state.selectedRisks.length;
+  const rated = state.selectedRisks.filter(r => state.execution[r.id]?.rating).length;
+  const unsat = state.selectedRisks.filter(r => state.execution[r.id]?.rating === 'Unsatisfactory').length;
+  const needsImp = state.selectedRisks.filter(r => state.execution[r.id]?.rating === 'Needs Improvement').length;
+
+  document.getElementById('findingsStats').innerHTML = `
+    <div class="stat-card"><div class="stat-num">${total}</div><div class="stat-label">Risk Areas Selected</div><div class="progress-bar"><div class="progress-fill" style="width:${(rated/total)*100}%"></div></div></div>
+    <div class="stat-card"><div class="stat-num" style="color:var(--success);">${state.selectedRisks.filter(r=>state.execution[r.id]?.rating==='Satisfactory').length}</div><div class="stat-label">Satisfactory</div></div>
+    <div class="stat-card"><div class="stat-num" style="color:var(--warning);">${needsImp}</div><div class="stat-label">Needs Improvement</div></div>
+    <div class="stat-card"><div class="stat-num" style="color:var(--danger);">${unsat}</div><div class="stat-label">Unsatisfactory</div></div>`;
+
+  // Summary table
+  const tbody = document.getElementById('findingsSummaryBody');
+  tbody.innerHTML = state.selectedRisks.map(r => {
+    const ex = state.execution[r.id];
+    const rc = ratingCode(ex.rating);
+    return `<tr>
+      <td><strong>${r.icon} ${r.name}</strong></td>
+      <td><span class="rating-badge badge-${rc||'NT'}">${ex.rating || 'Not Rated'}</span></td>
+      <td><input type="text" style="width:100%;border:1px dashed var(--border);padding:3px 6px;border-radius:3px;font-size:12px;" placeholder="Key finding..." value="${ex.additionalFindings||''}" onblur="state.execution['${r.id}'].additionalFindings=this.value"></td>
+      <td style="font-size:12px;color:var(--danger);">${ex.redFlagsFound ? '⚑ ' + ex.redFlagsFound.substring(0,60) + (ex.redFlagsFound.length>60?'…':'') : '—'}</td>
+      <td style="font-size:12px;">${(ex.evidenceStatus||[]).filter(s=>s==='received').length}/${r.evidenceRequests.length} received</td>
+      <td><span class="rating-badge ${!ex.actionRequired||ex.actionRequired==='None' ? 'badge-NT' : ex.actionRequired==='Enforcement Referral'?'badge-U':'badge-NI'}">${ex.actionRequired||'—'}</span></td>
+    </tr>`;
+  }).join('');
+
+  // Evidence master log
+  const log = document.getElementById('evidenceMasterLog');
+  log.innerHTML = state.selectedRisks.map(r => {
+    const ex = state.execution[r.id];
+    const total = r.evidenceRequests.length;
+    const recv = (ex.evidenceStatus||[]).filter(s=>s==='received').length;
+    const out = (ex.evidenceStatus||[]).filter(s=>s==='outstanding').length;
+    return `<div style="margin-bottom:16px;">
+      <div style="font-weight:700;font-size:13px;color:var(--navy);margin-bottom:6px;">${r.icon} ${r.name}
+        <span style="margin-left:8px;font-weight:400;font-size:11px;color:var(--text-light);">${recv}/${total} received${out>0?' | '+out+' outstanding':''}</span>
+      </div>
+      ${r.evidenceRequests.map((e,i) => `
+        <div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--surface-2);font-size:12px;">
+          <span class="evidence-status ${evidenceClass(ex.evidenceStatus?.[i]||'pending')}" style="cursor:default;">${ex.evidenceStatus?.[i]||'pending'}</span>
+          <span>${e}</span>
+          ${ex.evidenceNotes?.[i] ? `<span style="color:var(--text-light);font-style:italic;"> | ${ex.evidenceNotes[i]}</span>` : ''}
+        </div>`).join('')}
+    </div>`;
+  }).join('');
+}
+
+// ── PHASE 4: REMEDIATION ─────────────────────────────────────
+function renderPhase4() {
+  const sel = document.getElementById('remRiskArea');
+  sel.innerHTML = state.selectedRisks.map(r => `<option value="${r.id}">${r.icon} ${r.name}</option>`).join('');
+  document.getElementById('signLead').value = state.setup.leadInspector || '';
+  renderRemediationList();
+}
+
+function addRemediation() {
+  const r = {
+    id: Date.now(),
+    riskId: val('remRiskArea'),
+    riskName: state.selectedRisks.find(r=>r.id===val('remRiskArea'))?.name || val('remRiskArea'),
+    ref: val('remRef'), finding: val('remFinding'), action: val('remAction'),
+    priority: val('remPriority'), deadline: val('remDeadline'),
+    owner: val('remOwner'), hiaOfficer: val('remHIAOfficer'),
+    status: 'Open', closureDate: '', closureNotes: ''
+  };
+  if (!r.finding || !r.action) { showToast('Please enter Finding and Action', 'error'); return; }
+  state.remediations.push(r);
+  setVal('remFinding', ''); setVal('remAction', ''); setVal('remRef', '');
+  renderRemediationList();
+  showToast('Remediation action added', 'success');
+}
+
+function renderRemediationList() {
+  const el = document.getElementById('remediationList');
+  if (state.remediations.length === 0) {
+    el.innerHTML = '<div class="alert alert-info">No remediation actions added yet. Use the form above to add actions arising from inspection findings.</div>';
+    return;
+  }
+  el.innerHTML = state.remediations.map((rem, idx) => `
+    <div class="rem-item">
+      <div class="rem-header">
+        <div>
+          <div class="rem-title">${rem.ref ? rem.ref + ' — ' : ''}${rem.riskName}</div>
+          <div class="rem-meta">${rem.finding.substring(0,100)}${rem.finding.length>100?'…':''}</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <span class="badge-priority-${rem.priority.startsWith('High')?'high':rem.priority.startsWith('Medium')?'medium':'low'}">${rem.priority.split('–')[0].trim()}</span>
+          <span class="rating-badge ${rem.status==='Open'?'badge-open':rem.status==='Closed'?'badge-closed':'badge-inprogress'}">${rem.status}</span>
+          <button class="btn btn-sm btn-outline" onclick="removeRemediation(${idx})" style="color:var(--danger);border-color:var(--danger);">✕</button>
+        </div>
+      </div>
+      <div class="rem-grid">
+        <div>
+          <div style="font-size:10px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;color:var(--text-light);margin-bottom:3px;">Required Action</div>
+          <div style="font-size:13px;">${rem.action}</div>
+        </div>
+        <div>
+          <div style="font-size:10px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;color:var(--text-light);margin-bottom:3px;">Deadline</div>
+          <div style="font-size:13px;">${rem.deadline || '—'}</div>
+          <div style="font-size:11px;color:var(--text-light);">Owner: ${rem.owner || '—'} | HIA: ${rem.hiaOfficer || '—'}</div>
+        </div>
+        <div>
+          <div style="font-size:10px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;color:var(--text-light);margin-bottom:3px;">Status & Closure</div>
+          <select style="width:100%;margin-bottom:4px;font-size:12px;" onchange="updateRemStatus(${idx},this.value)">
+            <option ${rem.status==='Open'?'selected':''}>Open</option>
+            <option ${rem.status==='In Progress'?'selected':''}>In Progress</option>
+            <option ${rem.status==='Closed'?'selected':''}>Closed</option>
+            <option ${rem.status==='Escalated'?'selected':''}>Escalated</option>
+          </select>
+          <input type="date" style="width:100%;font-size:12px;" value="${rem.closureDate}" onchange="updateRemClosure(${idx},'date',this.value)" placeholder="Closure date">
+          <input type="text" style="width:100%;font-size:12px;margin-top:3px;" value="${rem.closureNotes}" onblur="updateRemClosure(${idx},'notes',this.value)" placeholder="Closure notes / evidence reference...">
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function updateRemStatus(idx, v) { state.remediations[idx].status = v; renderRemediationList(); }
+function updateRemClosure(idx, field, v) {
+  if (field==='date') state.remediations[idx].closureDate = v;
+  else state.remediations[idx].closureNotes = v;
+}
+function removeRemediation(idx) { state.remediations.splice(idx, 1); renderRemediationList(); }
+
+// ── PHASE 5: EXPORT ──────────────────────────────────────────
+function renderPhase5() {
+  const total = state.selectedRisks.length;
+  const open = state.remediations.filter(r=>r.status==='Open').length;
+  const closed = state.remediations.filter(r=>r.status==='Closed').length;
+  const hi = state.remediations.filter(r=>r.priority.startsWith('High')).length;
+  document.getElementById('exportStats').innerHTML = `
+    <div class="stat-card"><div class="stat-num">${total}</div><div class="stat-label">Risk Areas Reviewed</div></div>
+    <div class="stat-card"><div class="stat-num">${state.remediations.length}</div><div class="stat-label">Remediation Actions</div></div>
+    <div class="stat-card"><div class="stat-num" style="color:var(--danger);">${open}</div><div class="stat-label">Open Actions</div></div>
+    <div class="stat-card"><div class="stat-num" style="color:var(--warning);">${hi}</div><div class="stat-label">High Priority</div></div>`;
+  document.getElementById('pptPresenter').value = state.setup.leadInspector || '';
+}
+
+// ── PDF GENERATION ───────────────────────────────────────────
+function generatePDF() {
+  try {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const s = state.setup;
+    const version = val('pdfVersion') || 'Draft';
+    let y = 0;
+
+    const W = 210, margin = 14, contentW = W - margin * 2;
+
+    // Cover page
+    doc.setFillColor(12, 31, 63);
+    doc.rect(0, 0, W, 297, 'F');
+    doc.setFillColor(184, 150, 62);
+    doc.rect(0, 80, W, 3, 'F');
+    doc.rect(0, 165, W, 3, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.text('HEALTH INSURANCE AUTHORITY', W/2, 35, {align:'center'});
+    doc.text('AN tÚDARÁS ÁRACHAIS SLÁINTE', W/2, 42, {align:'center'});
+    doc.setFontSize(22);
+    doc.setFont('helvetica', 'bold');
+    doc.text('INSPECTION REPORT', W/2, 70, {align:'center'});
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(184, 150, 62);
+    doc.text(s.insurerName || '[Regulated Entity]', W/2, 98, {align:'center'});
+    doc.setTextColor(200, 210, 230);
+    doc.setFontSize(11);
+    doc.text(s.inspectionType || 'Regulatory Inspection', W/2, 108, {align:'center'});
+    doc.text('Period under Review: ' + (s.reviewPeriod || 'N/A'), W/2, 118, {align:'center'});
+    doc.setFontSize(10);
+    doc.text('Lead Inspector: ' + (s.leadInspector || 'N/A'), W/2, 178, {align:'center'});
+    doc.text('Date: ' + new Date().toLocaleDateString('en-IE', {day:'2-digit',month:'long',year:'numeric'}), W/2, 186, {align:'center'});
+    doc.text('Classification: ' + (s.sensitivity || 'Restricted – HIA Internal'), W/2, 194, {align:'center'});
+    doc.setFillColor(184, 150, 62);
+    doc.setTextColor(12, 31, 63);
+    doc.roundedRect(W/2-25, 250, 50, 12, 2, 2, 'F');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.text(version.toUpperCase(), W/2, 257.5, {align:'center'});
+
+    // Helper functions
+    function newPage() {
+      doc.addPage();
+      // Header bar
+      doc.setFillColor(12, 31, 63);
+      doc.rect(0, 0, W, 14, 'F');
+      doc.setTextColor(255,255,255);
+      doc.setFont('helvetica','bold');
+      doc.setFontSize(7);
+      doc.text('HIA INSPECTION REPORT | ' + (s.insurerName||'').toUpperCase() + ' | ' + version.toUpperCase(), margin, 9);
+      doc.text('Page ' + doc.internal.getNumberOfPages(), W-margin, 9, {align:'right'});
+      // Footer
+      doc.setFillColor(240, 244, 250);
+      doc.rect(0, 288, W, 9, 'F');
+      doc.setTextColor(100,120,150);
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(6);
+      doc.text('Health Insurance Authority | Restricted – Regulatory Inspection Record | ' + TODAY, margin, 293);
+      return 22;
+    }
+
+    function addSection(title, col) {
+      if (y > 260) y = newPage();
+      doc.setFillColor(...(col||[12,31,63]));
+      doc.rect(margin, y, contentW, 7, 'F');
+      doc.setTextColor(255,255,255);
+      doc.setFont('helvetica','bold');
+      doc.setFontSize(9);
+      doc.text(title, margin+3, y+5);
+      y += 11;
+      doc.setTextColor(30,50,80);
+    }
+
+    function addRow(label, value) {
+      if (y > 270) y = newPage();
+      doc.setFont('helvetica','bold');
+      doc.setFontSize(8);
+      doc.setTextColor(12,31,63);
+      doc.text(label, margin, y);
+      doc.setFont('helvetica','normal');
+      doc.setTextColor(60,80,110);
+      const lines = doc.splitTextToSize(String(value||'N/A'), contentW-55);
+      doc.text(lines, margin+55, y);
+      y += Math.max(5, lines.length * 4.5);
+    }
+
+    function addPara(text, col) {
+      if (y > 265) y = newPage();
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(8.5);
+      doc.setTextColor(...(col||[60,80,110]));
+      const lines = doc.splitTextToSize(text, contentW - 4);
+      lines.forEach(line => {
+        if (y > 275) y = newPage();
+        doc.text(line, margin+2, y);
+        y += 5;
+      });
+      y += 2;
+    }
+
+    function addBullet(text, col) {
+      if (y > 270) y = newPage();
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(8.5);
+      doc.setTextColor(...(col||[60,80,110]));
+      doc.text('→', margin+2, y);
+      const lines = doc.splitTextToSize(text, contentW-12);
+      doc.text(lines, margin+9, y);
+      y += Math.max(5, lines.length * 4.5);
+    }
+
+    // Page 2: Inspection Details
+    y = newPage();
+    addSection('SECTION 1 — INSPECTION DETAILS');
+    addRow('Regulated Entity:', s.insurerName);
+    addRow('Reg. Number:', s.regNumber);
+    addRow('Inspection Type:', s.inspectionType);
+    addRow('Period Under Review:', s.reviewPeriod);
+    addRow('Start Date:', s.inspStartDate);
+    addRow('End Date (Expected):', s.inspEndDate);
+    addRow('Lead Inspector:', s.leadInspector);
+    addRow('Supporting Inspectors:', s.supportingInspectors);
+    addRow('Insurer Contact:', s.insurerContact);
+    addRow('Inherent Risk Rating:', s.inherentRisk);
+    addRow('Classification:', s.sensitivity);
+    y += 4;
+    addSection('SECTION 2 — INSPECTION RATIONALE');
+    if (s.inspRationale) addPara(s.inspRationale);
+    addRow('Consumer Protection Concern:', s.consumerConcern);
+    addRow('Market Integrity Concern:', s.marketConcern);
+    addRow('Prior Findings Reference:', s.priorRef);
+    if (s.priorFindings) addPara(s.priorFindings);
+
+    // Executive Summary
+    y = newPage();
+    addSection('SECTION 3 — EXECUTIVE SUMMARY');
+    addRow('Overall Rating:', val('overallRating'));
+    addRow('Consumer Detriment:', val('consumerDetriment'));
+    addRow('Regulatory Referral:', val('regulatoryReferral'));
+    y += 3;
+    if (val('execSummary')) { doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.setTextColor(12,31,63);doc.text('Findings Summary:', margin, y);y+=5; addPara(val('execSummary')); }
+    if (val('keyThemes')) { doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.setTextColor(12,31,63);doc.text('Key Themes:', margin, y);y+=5; addPara(val('keyThemes')); }
+
+    // Risk Area Ratings Summary
+    y += 4;
+    addSection('SECTION 4 — RISK AREA FINDINGS SUMMARY', [27, 79, 133]);
+    if (doc.autoTable) {
+      const tdata = state.selectedRisks.map(r => {
+        const ex = state.execution[r.id];
+        return [r.name, ex.rating||'Not Rated', ex.additionalFindings||'—', ex.redFlagsFound?'Yes':'No', ex.actionRequired||'—'];
+      });
+      doc.autoTable({
+        startY: y,
+        head: [['Risk Area','Rating','Key Finding','Red Flags','Action']],
+        body: tdata,
+        styles: { fontSize: 7.5, cellPadding: 2 },
+        headStyles: { fillColor: [27,54,107], textColor: 255, fontStyle: 'bold' },
+        alternateRowStyles: { fillColor: [242,245,249] },
+        columnStyles: { 0:{cellWidth:50}, 1:{cellWidth:25}, 2:{cellWidth:60}, 3:{cellWidth:18}, 4:{cellWidth:30} },
+        margin: { left: margin, right: margin }
+      });
+      y = doc.lastAutoTable.finalY + 8;
+    }
+
+    // Detailed findings per area
+    if (document.getElementById('pdfIncludeDetail')?.checked !== false) {
+      state.selectedRisks.forEach(r => {
+        const ex = state.execution[r.id];
+        y = newPage();
+        addSection(`RISK AREA: ${r.name.toUpperCase()}`, [12, 31, 63]);
+        addRow('Rating:', ex.rating || 'Not Rated');
+        addRow('Action Required:', ex.actionRequired || 'None specified');
+        addRow('Priority:', ex.priority || 'Not set');
+        y += 2;
+        doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.setTextColor(12,31,63);doc.text('Objective:', margin, y);y+=5;
+        addPara(r.objective);
+        if (ex.notes) { doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.setTextColor(12,31,63);doc.text('Inspector Notes:', margin, y);y+=5; addPara(ex.notes); }
+        if (ex.redFlagsFound) { doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.setTextColor(139,26,26);doc.text('⚑ Red Flags Identified:', margin, y);y+=5; addPara(ex.redFlagsFound,[139,26,26]); }
+        if (ex.additionalFindings) { doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.setTextColor(12,31,63);doc.text('Additional Findings:', margin, y);y+=5; addPara(ex.additionalFindings); }
+        y += 2;
+        // Sample test results
+        const hasResults = ex.sampleResults?.some(s=>s.result);
+        if (hasResults && doc.autoTable) {
+          doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.setTextColor(12,31,63);doc.text('Sample Test Results:', margin, y);y+=4;
+          const sd = r.sampleTests.map((t,i)=>[t.test,ex.sampleResults[i]?.result||'Not tested',ex.sampleResults[i]?.notes||'—']);
+          doc.autoTable({ startY:y, head:[['Test','Result','Notes/Exceptions']], body:sd,
+            styles:{fontSize:7.5,cellPadding:2}, headStyles:{fillColor:[42,77,133],textColor:255,fontStyle:'bold'},
+            alternateRowStyles:{fillColor:[242,245,249]}, margin:{left:margin,right:margin} });
+          y = doc.lastAutoTable.finalY + 6;
+        }
+        // Remediation expectations
+        doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.setTextColor(12,31,63);doc.text('Remediation Expectations — Controls & Evidence:', margin, y);y+=5;
+        addPara(r.remCtrl,[120,80,0]);
+        doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.setTextColor(12,31,63);doc.text('Remediation Expectations — Monitoring & Audit:', margin, y);y+=5;
+        addPara(r.remMon,[26,74,122]);
+      });
+    }
+
+    // Evidence log
+    if (document.getElementById('pdfIncludeEvidence')?.checked !== false) {
+      y = newPage();
+      addSection('EVIDENCE LOG', [42, 77, 133]);
+      state.selectedRisks.forEach(r => {
+        const ex = state.execution[r.id];
+        if (y > 260) y = newPage();
+        doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(12,31,63);
+        doc.text(r.name, margin, y); y += 5;
+        r.evidenceRequests.forEach((e, i) => {
+          if (y > 270) y = newPage();
+          const st = ex.evidenceStatus?.[i] || 'pending';
+          const stCol = st==='received'?[27,107,69]:st==='outstanding'?[139,26,26]:[155,91,0];
+          doc.setFont('helvetica','bold');doc.setFontSize(7.5);doc.setTextColor(...stCol);
+          doc.text('[' + st.toUpperCase() + ']', margin+2, y);
+          doc.setFont('helvetica','normal');doc.setTextColor(60,80,110);
+          const lines = doc.splitTextToSize(e, contentW-25);
+          doc.text(lines, margin+22, y);
+          y += Math.max(5, lines.length * 4.5);
+        });
+        y += 3;
+      });
+    }
+
+    // Remediation
+    if (document.getElementById('pdfIncludeRemediation')?.checked !== false && state.remediations.length > 0) {
+      y = newPage();
+      addSection('REMEDIATION ACTION PLAN', [139,26,26]);
+      state.remediations.forEach((rem, i) => {
+        if (y > 250) y = newPage();
+        doc.setFillColor(rem.status==='Closed'?230:rem.status==='In Progress'?232:255, rem.status==='Closed'?244:rem.status==='In Progress'?240:232, rem.status==='Closed'?238:rem.status==='In Progress'?248:232);
+        doc.rect(margin, y-2, contentW, 22, 'F');
+        doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(12,31,63);
+        doc.text(`${i+1}. ${rem.ref||''} ${rem.riskName}`, margin+2, y+3);
+        doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(60,80,110);
+        doc.text('Priority: ' + rem.priority.split('–')[0].trim() + ' | Deadline: ' + (rem.deadline||'TBC') + ' | Owner: ' + (rem.owner||'TBC') + ' | Status: ' + rem.status, margin+2, y+9);
+        const fLines = doc.splitTextToSize('Finding: ' + rem.finding, contentW-4);
+        doc.text(fLines.slice(0,1), margin+2, y+14);
+        doc.text('Action: ' + rem.action.substring(0,120), margin+2, y+19);
+        y += 27;
+      });
+    }
+
+    // Sign-off
+    if (document.getElementById('pdfIncludeSignoff')?.checked !== false) {
+      y = newPage();
+      addSection('FORMAL SIGN-OFF & CERTIFICATION', [12,31,63]);
+      addRow('Lead Inspector:', val('signLead'));
+      addRow('Inspector Reference:', val('signLeadRef'));
+      addRow('Sign-Off Date:', val('signDate'));
+      addRow('HIA Authorising Officer:', val('signAuth'));
+      addRow('Report Classification:', val('signClass'));
+      addRow('Insurer Acknowledgement:', val('signInsAck'));
+      addRow('Insurer Representative:', val('signInsRep'));
+      addRow('Acknowledgement Date:', val('signInsDate'));
+      y += 5;
+      if (val('signConclusion')) { doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.setTextColor(12,31,63);doc.text('Conclusion Statement:', margin, y);y+=5; addPara(val('signConclusion')); }
+      if (val('signNotes')) { doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.setTextColor(12,31,63);doc.text('Notes / Caveats:', margin, y);y+=5; addPara(val('signNotes')); }
+
+      // Signature boxes
+      y += 8;
+      if (y > 240) y = newPage();
+      doc.setDrawColor(12,31,63);
+      doc.setLineWidth(0.5);
+      ['Lead Inspector Signature', 'HIA Authorising Officer'].forEach((label, i) => {
+        const bx = margin + i * 95;
+        doc.rect(bx, y, 85, 25);
+        doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(120,140,160);
+        doc.text(label, bx+3, y+5);
+        doc.text('Name: ___________________________', bx+3, y+13);
+        doc.text('Date: ____________________________', bx+3, y+20);
+      });
+    }
+
+    const filename = `HIA_Inspection_${(s.insurerName||'Report').replace(/\s+/g,'_')}_${new Date().toISOString().slice(0,10)}.pdf`;
+    doc.save(filename);
+    showToast('PDF report saved: ' + filename, 'success');
+  } catch(e) {
+    showToast('PDF generation error: ' + e.message, 'error');
+    console.error(e);
+  }
+}
+
+// ── PPTX GENERATION ──────────────────────────────────────────
+function generatePPTX() {
+  try {
+    const pptx = new PptxGenJS();
+    const s = state.setup;
+    const audience = val('pptAudience');
+    const presenter = val('pptPresenter') || s.leadInspector || 'HIA Inspector';
+    const pptDate = val('pptDate') || TODAY;
+
+    // Theme
+    const NAVY = '0C1F3F'; const GOLD = 'B8963E'; const WHITE = 'FFFFFF';
+    const LIGHT = 'F2F5F9'; const MID = '1A3560'; const TEXT = '334466';
+
+    pptx.layout = 'LAYOUT_WIDE';
+    pptx.title = 'HIA Inspection - ' + (s.insurerName || 'Entity');
+    pptx.author = presenter;
+
+    // Slide 1: Title
+    let sl = pptx.addSlide();
+    sl.background = { color: NAVY };
+    sl.addShape(pptx.ShapeType.rect, { x:0, y:2.6, w:13.33, h:0.08, fill:{color:GOLD} });
+    sl.addShape(pptx.ShapeType.rect, { x:0, y:4.8, w:13.33, h:0.08, fill:{color:GOLD} });
+    sl.addText('HEALTH INSURANCE AUTHORITY', { x:0.5, y:0.3, w:12, h:0.5, fontSize:12, bold:true, color:WHITE, align:'center', fontFace:'Calibri' });
+    sl.addText('An tÚdarás Árachais Sláinte', { x:0.5, y:0.75, w:12, h:0.4, fontSize:10, color:'8FA8CC', align:'center', italic:true, fontFace:'Calibri' });
+    sl.addText('REGULATORY INSPECTION REPORT', { x:0.5, y:1.4, w:12, h:0.7, fontSize:22, bold:true, color:WHITE, align:'center', fontFace:'Calibri' });
+    sl.addText(s.insurerName || '[Regulated Entity]', { x:0.5, y:2.9, w:12, h:0.55, fontSize:18, bold:true, color:GOLD, align:'center', fontFace:'Calibri' });
+    sl.addText(s.inspectionType || 'Regulatory Inspection', { x:0.5, y:3.4, w:12, h:0.45, fontSize:13, color:'C8D4E8', align:'center', fontFace:'Calibri' });
+    sl.addText('Period: ' + (s.reviewPeriod||'TBC'), { x:0.5, y:3.85, w:12, h:0.4, fontSize:11, color:'8FA8CC', align:'center', fontFace:'Calibri' });
+    const metaLines = [
+      { text: 'Lead Inspector: ', options:{bold:true,color:WHITE} },
+      { text: (presenter||'—') + '   |   ', options:{color:'C8D4E8'} },
+      { text: 'Date: ', options:{bold:true,color:WHITE} },
+      { text: pptDate + '   |   ', options:{color:'C8D4E8'} },
+      { text: 'Audience: ', options:{bold:true,color:WHITE} },
+      { text: audience, options:{color:'C8D4E8'} }
+    ];
+    sl.addText(metaLines, { x:0.5, y:5.05, w:12, h:0.4, fontSize:10, align:'center', fontFace:'Calibri' });
+    sl.addShape(pptx.ShapeType.roundRect, { x:5.4, y:5.65, w:2.5, h:0.4, fill:{color:GOLD}, line:{color:GOLD}, rectRadius:0.05 });
+    sl.addText((val('pdfVersion')||'DRAFT').toUpperCase(), { x:5.4, y:5.65, w:2.5, h:0.4, fontSize:9, bold:true, color:NAVY, align:'center', fontFace:'Calibri' });
+
+    // Slide 2: Agenda
+    sl = pptx.addSlide();
+    sl.background = { color: LIGHT };
+    sl.addShape(pptx.ShapeType.rect, { x:0, y:0, w:13.33, h:0.8, fill:{color:NAVY} });
+    sl.addText('AGENDA', { x:0.3, y:0.1, w:12, h:0.6, fontSize:18, bold:true, color:WHITE, fontFace:'Calibri' });
+    const agenda = ['1.  Inspection Overview & Scope','2.  Risk Equalisation & Governance Framework','3.  Risk Area Findings Summary','4.  Key Themes & Consumer Outcomes','5.  Remediation Actions & Timelines','6.  Next Steps & HIA Expectations','7.  Sign-off & Acknowledgement'];
+    agenda.forEach((item, i) => {
+      sl.addText(item, { x:0.8, y:1.0 + i*0.6, w:11, h:0.5, fontSize:13, color:TEXT, fontFace:'Calibri' });
+      sl.addShape(pptx.ShapeType.rect, { x:0.4, y:1.05 + i*0.6, w:0.15, h:0.3, fill:{color:GOLD} });
+    });
+
+    // Slide 3: Inspection Overview
+    sl = pptx.addSlide();
+    sl.background = { color: WHITE };
+    sl.addShape(pptx.ShapeType.rect, { x:0, y:0, w:13.33, h:0.8, fill:{color:NAVY} });
+    sl.addText('INSPECTION OVERVIEW', { x:0.3, y:0.1, w:12, h:0.6, fontSize:18, bold:true, color:WHITE, fontFace:'Calibri' });
+    sl.addShape(pptx.ShapeType.rect, { x:0, y:0.8, w:13.33, h:0.06, fill:{color:GOLD} });
+    const ovData = [
+      ['Regulated Entity', s.insurerName||'—'],['Registration Number', s.regNumber||'—'],
+      ['Inspection Type', s.inspectionType||'—'],['Period Under Review', s.reviewPeriod||'—'],
+      ['Lead Inspector', s.leadInspector||'—'],['Inherent Risk Rating', s.inherentRisk||'—'],
+      ['Risk Areas Selected', state.selectedRisks.length.toString()],['Prior Flags', s.priorRef||'None']
+    ];
+    ovData.forEach((row, i) => {
+      const col = i % 2 === 0;
+      const xOff = col ? 0.3 : 7.0;
+      const yOff = 1.1 + Math.floor(i/2) * 0.75;
+      sl.addText(row[0], { x:xOff, y:yOff, w:2.5, h:0.35, fontSize:9, bold:true, color:'6B7E99', fontFace:'Calibri' });
+      sl.addText(row[1], { x:xOff+2.5, y:yOff, w:3.5, h:0.35, fontSize:11, color:NAVY, bold:true, fontFace:'Calibri' });
+    });
+    if (s.inspRationale) {
+      sl.addShape(pptx.ShapeType.rect, { x:0.3, y:4.0, w:12.6, h:1.2, fill:{color:'E8F0FA'}, line:{color:'9BB8D8'} });
+      sl.addText('Inspection Rationale:', { x:0.5, y:4.1, w:12, h:0.3, fontSize:9, bold:true, color:MID, fontFace:'Calibri' });
+      sl.addText(s.inspRationale.substring(0,200) + (s.inspRationale.length>200?'…':''), { x:0.5, y:4.38, w:12, h:0.75, fontSize:9, color:TEXT, fontFace:'Calibri' });
+    }
+
+    // Slide 4: Findings Dashboard
+    sl = pptx.addSlide();
+    sl.background = { color: LIGHT };
+    sl.addShape(pptx.ShapeType.rect, { x:0, y:0, w:13.33, h:0.8, fill:{color:NAVY} });
+    sl.addText('FINDINGS DASHBOARD', { x:0.3, y:0.1, w:12, h:0.6, fontSize:18, bold:true, color:WHITE, fontFace:'Calibri' });
+    const ratingCounts = { S:0, NI:0, U:0, NT:0 };
+    state.selectedRisks.forEach(r => {
+      const ex = state.execution[r.id];
+      const rc = ratingCode(ex.rating) || 'NT';
+      ratingCounts[rc]++;
+    });
+    const statBoxes = [
+      { label:'Satisfactory', count:ratingCounts.S, color:'1B6B45', bg:'E6F4EE' },
+      { label:'Needs Improvement', count:ratingCounts.NI, color:'9B5B00', bg:'FFF4E0' },
+      { label:'Unsatisfactory', count:ratingCounts.U, color:'8B1A1A', bg:'FDE8E8' },
+      { label:'Not Tested / Rated', count:ratingCounts.NT, color:'5A6A80', bg:'EEF2F7' }
+    ];
+    statBoxes.forEach((b, i) => {
+      const x = 0.3 + i * 3.2;
+      sl.addShape(pptx.ShapeType.roundRect, { x, y:0.95, w:3.0, h:1.2, fill:{color:b.bg}, line:{color:b.color,pt:1.5}, rectRadius:0.06 });
+      sl.addText(b.count.toString(), { x, y:1.0, w:3.0, h:0.65, fontSize:30, bold:true, color:b.color, align:'center', fontFace:'Calibri' });
+      sl.addText(b.label, { x, y:1.65, w:3.0, h:0.4, fontSize:9, color:b.color, align:'center', fontFace:'Calibri' });
+    });
+    // Overall rating
+    const overallR = val('overallRating') || '—';
+    sl.addText('Overall Control Environment Rating:', { x:0.3, y:2.4, w:7, h:0.4, fontSize:11, bold:true, color:NAVY, fontFace:'Calibri' });
+    sl.addShape(pptx.ShapeType.roundRect, { x:7.4, y:2.3, w:5.5, h:0.55, fill:{color:NAVY}, line:{color:GOLD}, rectRadius:0.05 });
+    sl.addText(overallR.toUpperCase(), { x:7.4, y:2.3, w:5.5, h:0.55, fontSize:13, bold:true, color:GOLD, align:'center', fontFace:'Calibri' });
+
+    // Slide 5: Risk Area Findings Table
+    sl = pptx.addSlide();
+    sl.background = { color: WHITE };
+    sl.addShape(pptx.ShapeType.rect, { x:0, y:0, w:13.33, h:0.8, fill:{color:MID} });
+    sl.addText('RISK AREA FINDINGS', { x:0.3, y:0.1, w:12, h:0.6, fontSize:18, bold:true, color:WHITE, fontFace:'Calibri' });
+    const tRows = [
+      [{ text:'Risk Area', options:{bold:true} }, { text:'Rating', options:{bold:true} }, { text:'Key Finding / Action', options:{bold:true} }],
+      ...state.selectedRisks.slice(0, 10).map(r => {
+        const ex = state.execution[r.id];
+        const rc = ratingCode(ex.rating);
+        const rColor = rc==='S'?'1B6B45':rc==='NI'?'9B5B00':rc==='U'?'8B1A1A':'5A6A80';
+        return [
+          { text: r.icon + ' ' + r.name, options:{bold:false} },
+          { text: ex.rating||'—', options:{bold:true, color:rColor} },
+          { text: (ex.additionalFindings||ex.notes||'No specific finding recorded').substring(0,90), options:{} }
+        ];
+      })
+    ];
+    sl.addTable(tRows, {
+      x:0.3, y:0.9, w:12.7, h:6.0,
+      fill:{ color:WHITE }, border:{ pt:0.5, color:'D0D9E8' },
+      colW:[4.5, 2.5, 5.7],
+      rowH:0.42,
+      fontSize:9, fontFace:'Calibri', color:TEXT,
+      thead:{ fill:{ color:NAVY }, color:WHITE, bold:true, fontSize:9 }
+    });
+
+    // Slide 6: Key Themes
+    sl = pptx.addSlide();
+    sl.background = { color: NAVY };
+    sl.addShape(pptx.ShapeType.rect, { x:0, y:0, w:0.25, h:7.5, fill:{color:GOLD} });
+    sl.addText('KEY THEMES &\nCONSUMER OUTCOMES', { x:0.5, y:0.3, w:11, h:1.2, fontSize:22, bold:true, color:WHITE, fontFace:'Calibri' });
+    const themes = (val('keyThemes')||'No key themes recorded. Please review and update.').split('\n').filter(t=>t.trim()).slice(0,5);
+    const consumerD = val('consumerDetriment')||'No consumer detriment identified';
+    themes.forEach((theme, i) => {
+      sl.addShape(pptx.ShapeType.rect, { x:0.5, y:1.7+i*0.8, w:0.35, h:0.45, fill:{color:GOLD} });
+      sl.addText(theme, { x:1.1, y:1.73+i*0.8, w:11.5, h:0.4, fontSize:12, color:WHITE, fontFace:'Calibri' });
+    });
+    sl.addShape(pptx.ShapeType.rect, { x:0.5, y:5.5, w:12.5, h:0.7, fill:{color:'1A3560'}, line:{color:GOLD,pt:1} });
+    sl.addText('Consumer Outcome: ' + consumerD, { x:0.6, y:5.55, w:12, h:0.55, fontSize:11, color:GOLD, bold:true, fontFace:'Calibri' });
+
+    // Slide 7: Remediation Summary
+    sl = pptx.addSlide();
+    sl.background = { color: WHITE };
+    sl.addShape(pptx.ShapeType.rect, { x:0, y:0, w:13.33, h:0.8, fill:{color:'8B1A1A'} });
+    sl.addText('REMEDIATION ACTION PLAN', { x:0.3, y:0.1, w:12, h:0.6, fontSize:18, bold:true, color:WHITE, fontFace:'Calibri' });
+    if (state.remediations.length === 0) {
+      sl.addText('No formal remediation actions have been recorded.', { x:0.5, y:2.0, w:12, h:0.5, fontSize:13, color:TEXT, italic:true, fontFace:'Calibri' });
+    } else {
+      const hiRem = state.remediations.filter(r=>r.priority.startsWith('High'));
+      const midRem = state.remediations.filter(r=>r.priority.startsWith('Medium'));
+      const loRem = state.remediations.filter(r=>r.priority.startsWith('Low'));
+      const remStats = [
+        {label:'High Priority', count:hiRem.length, color:'8B1A1A', bg:'FDE8E8'},
+        {label:'Medium Priority', count:midRem.length, color:'9B5B00', bg:'FFF4E0'},
+        {label:'Low Priority', count:loRem.length, color:'1A4A7A', bg:'E8F0FA'},
+        {label:'Total Actions', count:state.remediations.length, color:NAVY, bg:LIGHT}
+      ];
+      remStats.forEach((r,i) => {
+        sl.addShape(pptx.ShapeType.roundRect, {x:0.3+i*3.2,y:0.95,w:3.0,h:0.9,fill:{color:r.bg},line:{color:r.color,pt:1},rectRadius:0.05});
+        sl.addText(r.count.toString(), {x:0.3+i*3.2,y:0.97,w:3.0,h:0.5,fontSize:24,bold:true,color:r.color,align:'center',fontFace:'Calibri'});
+        sl.addText(r.label, {x:0.3+i*3.2,y:1.47,w:3.0,h:0.3,fontSize:9,color:r.color,align:'center',fontFace:'Calibri'});
+      });
+      // Top 5 remediations
+      const top5 = state.remediations.slice(0,5);
+      if (doc && top5.length > 0) {} // placeholder
+      const remRows = [[
+        {text:'Ref', options:{bold:true}},{text:'Risk Area',options:{bold:true}},{text:'Priority',options:{bold:true}},
+        {text:'Action Required',options:{bold:true}},{text:'Deadline',options:{bold:true}},{text:'Status',options:{bold:true}}
+      ], ...top5.map(r => [
+        {text:r.ref||'—'},{text:r.riskName.substring(0,20)},{text:r.priority.split('–')[0].trim()},
+        {text:(r.action||'').substring(0,60)},{text:r.deadline||'TBC'},{text:r.status}
+      ])];
+      sl.addTable(remRows, { x:0.3, y:2.0, w:12.7, h:4.5, fill:{color:WHITE}, border:{pt:0.5,color:'D0D9E8'},
+        colW:[1.2,2.5,1.5,5.0,1.5,1.0], rowH:0.55, fontSize:8.5, fontFace:'Calibri', color:TEXT,
+        thead:{fill:{color:'8B1A1A'},color:WHITE,bold:true,fontSize:8.5} });
+    }
+
+    // Slide 8: Next Steps
+    sl = pptx.addSlide();
+    sl.background = { color: LIGHT };
+    sl.addShape(pptx.ShapeType.rect, { x:0, y:0, w:13.33, h:0.8, fill:{color:NAVY} });
+    sl.addText('NEXT STEPS & HIA EXPECTATIONS', { x:0.3, y:0.1, w:12, h:0.6, fontSize:18, bold:true, color:WHITE, fontFace:'Calibri' });
+    const nextSteps = [
+      '1.  Draft Inspection Report issued to ' + (s.insurerName||'Entity') + ' within [X] business days',
+      '2.  Entity to respond to draft findings within 20 business days',
+      '3.  Final Report issued following consideration of entity response',
+      '4.  Remediation actions to be implemented by deadlines stated in Action Plan',
+      '5.  Evidence of remediation to be submitted to HIA Supervision Team',
+      '6.  HIA to conduct enhanced supervisory monitoring of outstanding actions',
+      '7.  Follow-up inspection / validation visit scheduled as appropriate',
+      '8.  Entity to notify HIA of any material developments impacting findings'
+    ];
+    nextSteps.forEach((step, i) => {
+      sl.addText(step, { x:0.8, y:1.0+i*0.65, w:12, h:0.55, fontSize:12, color:TEXT, fontFace:'Calibri' });
+      sl.addShape(pptx.ShapeType.rect, { x:0.4, y:1.05+i*0.65, w:0.15, h:0.3, fill:{color:i<2?'8B1A1A':i<4?'9B5B00':MID} });
+    });
+
+    // Slide 9: Closing / Contact
+    sl = pptx.addSlide();
+    sl.background = { color: NAVY };
+    sl.addShape(pptx.ShapeType.rect, { x:0, y:2.8, w:13.33, h:0.06, fill:{color:GOLD} });
+    sl.addText('HEALTH INSURANCE AUTHORITY', { x:0.5, y:0.5, w:12, h:0.6, fontSize:13, bold:true, color:WHITE, align:'center', fontFace:'Calibri' });
+    sl.addText('Regulatory Inspection', { x:0.5, y:1.1, w:12, h:0.5, fontSize:11, color:'8FA8CC', align:'center', italic:true, fontFace:'Calibri' });
+    sl.addText(s.insurerName || '[Entity]', { x:0.5, y:1.6, w:12, h:0.6, fontSize:18, bold:true, color:GOLD, align:'center', fontFace:'Calibri' });
+    sl.addText('This report is produced in accordance with the Health Insurance Acts 1994-2022\nand the HIA\'s supervisory framework. All findings, ratings and remediation\nexpectations are subject to the formal report issuance process.', {
+      x:1.0, y:3.1, w:11, h:1.5, fontSize:10, color:'8FA8CC', align:'center', fontFace:'Calibri' });
+    sl.addText('Lead Inspector: ' + (presenter||'—'), { x:0.5, y:4.8, w:12, h:0.4, fontSize:10, color:WHITE, align:'center', fontFace:'Calibri' });
+    sl.addText('www.hia.ie  |  info@hia.ie  |  +353 1 406 0080', { x:0.5, y:5.3, w:12, h:0.4, fontSize:9, color:'6A88AA', align:'center', fontFace:'Calibri' });
+    sl.addShape(pptx.ShapeType.rect, { x:0, y:6.8, w:13.33, h:0.7, fill:{color:GOLD} });
+    sl.addText((val('pdfVersion')||'DRAFT') + ' | ' + pptDate + ' | ' + (val('signClass')||'Restricted – HIA Internal'), { x:0.5, y:6.85, w:12, h:0.5, fontSize:9, bold:true, color:NAVY, align:'center', fontFace:'Calibri' });
+
+    const filename = `HIA_Inspection_Slides_${(s.insurerName||'Report').replace(/\s+/g,'_')}_${new Date().toISOString().slice(0,10)}.pptx`;
+    pptx.writeFile({ fileName: filename });
+    showToast('PowerPoint saved: ' + filename, 'success');
+  } catch(e) {
+    showToast('PPTX error: ' + e.message, 'error');
+    console.error(e);
+  }
+}
+
+// ── SESSION PERSISTENCE ──────────────────────────────────────
+function saveSession() {
+  try {
+    localStorage.setItem('hia_inspection', JSON.stringify(state));
+    showToast('Session saved to browser storage', 'success');
+  } catch(e) { showToast('Could not save: ' + e.message, 'error'); }
+}
+
+function loadSession() {
+  try {
+    const d = localStorage.getItem('hia_inspection');
+    if (!d) { showToast('No saved session found', 'error'); return; }
+    const saved = JSON.parse(d);
+    Object.assign(state, saved);
+    // restore form
+    Object.entries(state.setup).forEach(([k,v]) => setVal(k, v));
+    RISK_AREAS.forEach(r => {
+      const chk = document.getElementById('chk_' + r.id);
+      const cb = document.getElementById('cb_' + r.id);
+      const ci = document.getElementById('ci_' + r.id);
+      const isSelected = state.selectedRisks.some(sr => sr.id === r.id);
+      if (chk) { chk.checked = isSelected; cb.classList.toggle('checked', isSelected); ci.innerHTML = isSelected ? '✓' : ''; }
+    });
+    showToast('Session restored successfully', 'success');
+  } catch(e) { showToast('Could not load session: ' + e.message, 'error'); }
+}
+
+function exportJSON() {
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `HIA_Inspection_Data_${(state.setup.insurerName||'Report').replace(/\s+/g,'_')}_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  showToast('JSON data exported', 'success');
+}
+
+// ── INIT ────────────────────────────────────────────────────
+document.getElementById('inspStartDate').value = new Date().toISOString().slice(0,10);
+</script>
+</body>
+</html>
